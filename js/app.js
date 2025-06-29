@@ -126,37 +126,35 @@ class ProductFilterApp {
       const highlightedDescription = this.productManager.highlightSearchTerm(product.description, searchTerm);
       
       return `
-        <div class="product-card fade-in p-6" style="animation-delay: ${index * 0.05}s">
-          <div class="relative mb-4">
+        <div class="product-card glow-effect fade-in" style="animation-delay: ${index * 0.05}s">
+          <div class="product-image-container">
             <img 
               src="${product.image}" 
               alt="${product.name}"
-              class="w-full h-48 object-cover rounded-lg"
+              class="product-image"
               loading="lazy"
             >
-            <div class="absolute top-2 right-2">
-              <span class="popularity-badge">
-                <i class="fas fa-star text-yellow-500 mr-1"></i>
-                ${product.popularity}
-              </span>
+            <div class="popularity-badge">
+              <i class="fas fa-star text-yellow-500 mr-1"></i>
+              ${product.popularity}
             </div>
           </div>
           
-          <div class="space-y-3">
-            <h3 class="text-lg font-semibold text-gray-900 line-clamp-2">
+          <div class="product-content">
+            <h3 class="product-title">
               ${highlightedName}
             </h3>
             
-            <p class="text-gray-600 text-sm line-clamp-2">
+            <p class="product-description">
               ${highlightedDescription}
             </p>
             
-            <div class="flex items-center justify-between">
+            <div class="product-footer">
               <span class="price-tag">
                 $${product.price}
               </span>
               
-              <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium">
+              <button class="add-to-cart-btn">
                 <i class="fas fa-shopping-cart mr-2"></i>
                 Add to Cart
               </button>
