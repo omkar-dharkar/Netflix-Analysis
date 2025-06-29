@@ -6,7 +6,7 @@ import { NetflixAnalyticsEngine } from './analytics-engine.js';
 class NetflixAnalyticsApp {
   constructor() {
     this.contentManager = new ContentManager();
-    this.dashboard = new NetflixDashboard();
+    this.dashboard = null;
     this.analytics = new NetflixAnalyticsEngine();
     this.isLoading = false;
     this.debounceTimer = null;
@@ -21,6 +21,18 @@ class NetflixAnalyticsApp {
     this.setupTabNavigation();
     this.filterAndRenderContent();
     this.setupAnalyticsFeatures();
+    
+    // Initialize dashboard after a short delay to ensure DOM is ready
+    setTimeout(() => {
+      this.initializeDashboard();
+    }, 100);
+  }
+
+  initializeDashboard() {
+    // Only initialize dashboard if we're on the dashboard tab and it hasn't been initialized
+    if (this.currentTab === 'dashboard' && !this.dashboard) {
+      this.dashboard = new NetflixDashboard();
+    }
   }
 
   renderGenres() {
@@ -92,6 +104,14 @@ class NetflixAnalyticsApp {
         }
         
         this.currentTab = targetTab;
+        
+        // Initialize dashboard when switching to dashboard tab
+        if (targetTab === 'dashboard' && !this.dashboard) {
+          // Small delay to ensure the content is visible
+          setTimeout(() => {
+            this.initializeDashboard();
+          }, 50);
+        }
         
         // Hide mobile menu after selection
         const mobileMenu = document.getElementById('mobile-menu');

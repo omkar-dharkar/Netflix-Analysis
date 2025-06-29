@@ -6,26 +6,64 @@ export class NetflixDashboard {
   constructor() {
     this.analytics = new NetflixAnalyticsEngine();
     this.charts = {};
+    this.isInitialized = false;
     this.initializeDashboard();
   }
 
   initializeDashboard() {
-    this.renderOverviewCards();
-    this.renderViewingFunnel();
-    this.renderGenrePerformance();
-    this.renderEngagementChart();
-    this.renderTopContent();
-    this.renderContentPerformance();
-    this.renderAudienceSegmentation();
-    this.renderViewingPatterns();
-    this.renderInsights();
+    // Check if dashboard elements are available
+    if (!this.checkDashboardElements()) {
+      console.warn('Dashboard elements not ready, retrying...');
+      setTimeout(() => this.initializeDashboard(), 100);
+      return;
+    }
+
+    if (this.isInitialized) {
+      return;
+    }
+
+    this.isInitialized = true;
+    
+    try {
+      this.renderOverviewCards();
+      this.renderViewingFunnel();
+      this.renderGenrePerformance();
+      this.renderEngagementChart();
+      this.renderTopContent();
+      this.renderContentPerformance();
+      this.renderAudienceSegmentation();
+      this.renderViewingPatterns();
+      this.renderInsights();
+    } catch (error) {
+      console.error('Error initializing dashboard:', error);
+      this.isInitialized = false;
+    }
+  }
+
+  checkDashboardElements() {
+    const requiredElements = [
+      'overview-cards',
+      'viewingChart',
+      'genreChart',
+      'engagementChart',
+      'top-content',
+      'ai-insights'
+    ];
+
+    return requiredElements.every(id => {
+      const element = document.getElementById(id);
+      return element && element.offsetParent !== null; // Check if element is visible
+    });
   }
 
   renderOverviewCards() {
     const insights = this.analytics.generateInsights();
     const container = document.getElementById('overview-cards');
     
-    if (!container) return;
+    if (!container) {
+      console.warn('Overview cards container not found');
+      return;
+    }
     
     container.innerHTML = insights.map(insight => `
       <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800 hover:border-red-600 transition-all duration-300">
@@ -70,7 +108,15 @@ export class NetflixDashboard {
     const funnel = this.analytics.getViewingFunnel();
     const ctx = document.getElementById('viewingChart');
     
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn('Viewing chart canvas not found');
+      return;
+    }
+    
+    // Destroy existing chart if it exists
+    if (this.charts.viewing) {
+      this.charts.viewing.destroy();
+    }
     
     this.charts.viewing = new Chart(ctx, {
       type: 'bar',
@@ -134,7 +180,15 @@ export class NetflixDashboard {
     const genreData = this.analytics.getGenrePerformance();
     const ctx = document.getElementById('genreChart');
     
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn('Genre chart canvas not found');
+      return;
+    }
+    
+    // Destroy existing chart if it exists
+    if (this.charts.genre) {
+      this.charts.genre.destroy();
+    }
     
     this.charts.genre = new Chart(ctx, {
       type: 'doughnut',
@@ -177,7 +231,15 @@ export class NetflixDashboard {
       .map(([hour, count]) => ({ hour: parseInt(hour), count }));
     
     const ctx = document.getElementById('engagementChart');
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn('Engagement chart canvas not found');
+      return;
+    }
+    
+    // Destroy existing chart if it exists
+    if (this.charts.engagement) {
+      this.charts.engagement.destroy();
+    }
     
     this.charts.engagement = new Chart(ctx, {
       type: 'line',
@@ -238,7 +300,10 @@ export class NetflixDashboard {
     const topContent = this.analytics.getTopPerformingContent(5);
     const container = document.getElementById('top-content');
     
-    if (!container) return;
+    if (!container) {
+      console.warn('Top content container not found');
+      return;
+    }
     
     container.innerHTML = `
       <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
@@ -377,7 +442,10 @@ export class NetflixDashboard {
 
   renderInsights() {
     const container = document.getElementById('ai-insights');
-    if (!container) return;
+    if (!container) {
+      console.warn('AI insights container not found');
+      return;
+    }
     
     const insights = [
       {
@@ -437,6 +505,9 @@ export class NetflixDashboard {
     Object.values(this.charts).forEach(chart => {
       if (chart) chart.destroy();
     });
+    
+    this.charts = {};
+    this.isInitialized = false;
     
     // Reinitialize
     this.initializeDashboard();
