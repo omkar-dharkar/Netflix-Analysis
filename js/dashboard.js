@@ -1,23 +1,23 @@
-import { AnalyticsEngine } from './analytics-engine.js';
+import { NetflixAnalyticsEngine } from './analytics-engine.js';
 import Chart from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 
-export class Dashboard {
+export class NetflixDashboard {
   constructor() {
-    this.analytics = new AnalyticsEngine();
+    this.analytics = new NetflixAnalyticsEngine();
     this.charts = {};
     this.initializeDashboard();
   }
 
   initializeDashboard() {
     this.renderOverviewCards();
-    this.renderConversionFunnel();
-    this.renderCategoryPerformance();
-    this.renderRevenueChart();
-    this.renderTopProducts();
-    this.renderPriceOptimization();
-    this.renderMarketBasket();
-    this.renderUserSegmentation();
+    this.renderViewingFunnel();
+    this.renderGenrePerformance();
+    this.renderEngagementChart();
+    this.renderTopContent();
+    this.renderContentPerformance();
+    this.renderAudienceSegmentation();
+    this.renderViewingPatterns();
     this.renderInsights();
   }
 
@@ -28,19 +28,19 @@ export class Dashboard {
     if (!container) return;
     
     container.innerHTML = insights.map(insight => `
-      <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+      <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800 hover:border-red-600 transition-all duration-300">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">${insight.title}</h3>
+          <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wide">${insight.title}</h3>
           <div class="p-2 rounded-lg ${this.getIconBg(insight.type)}">
             <i class="${this.getIcon(insight.type)} text-white"></i>
           </div>
         </div>
         <div class="space-y-2">
-          <p class="text-3xl font-bold text-gray-900">${insight.value}</p>
+          <p class="text-3xl font-bold text-white">${insight.value}</p>
           <div class="flex items-center space-x-2">
-            <span class="text-sm font-medium ${insight.trend.includes('+') || insight.trend === 'High' ? 'text-green-600' : 'text-blue-600'}">${insight.trend}</span>
+            <span class="text-sm font-medium ${insight.trend.includes('+') || insight.trend === 'High' ? 'text-green-400' : 'text-red-400'}">${insight.trend}</span>
           </div>
-          <p class="text-sm text-gray-600">${insight.description}</p>
+          <p class="text-sm text-gray-400">${insight.description}</p>
         </div>
       </div>
     `).join('');
@@ -48,48 +48,48 @@ export class Dashboard {
 
   getIcon(type) {
     const icons = {
-      revenue: 'fas fa-dollar-sign',
-      category: 'fas fa-chart-pie',
-      conversion: 'fas fa-funnel-dollar',
-      engagement: 'fas fa-users'
+      viewing: 'fas fa-play',
+      genre: 'fas fa-chart-pie',
+      engagement: 'fas fa-heart',
+      users: 'fas fa-users'
     };
     return icons[type] || 'fas fa-chart-line';
   }
 
   getIconBg(type) {
     const backgrounds = {
-      revenue: 'bg-green-500',
-      category: 'bg-blue-500',
-      conversion: 'bg-purple-500',
-      engagement: 'bg-orange-500'
+      viewing: 'bg-red-600',
+      genre: 'bg-blue-600',
+      engagement: 'bg-purple-600',
+      users: 'bg-green-600'
     };
-    return backgrounds[type] || 'bg-gray-500';
+    return backgrounds[type] || 'bg-gray-600';
   }
 
-  renderConversionFunnel() {
-    const funnel = this.analytics.getConversionFunnel();
-    const ctx = document.getElementById('conversionChart');
+  renderViewingFunnel() {
+    const funnel = this.analytics.getViewingFunnel();
+    const ctx = document.getElementById('viewingChart');
     
     if (!ctx) return;
     
-    this.charts.conversion = new Chart(ctx, {
+    this.charts.viewing = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Views', 'Clicks', 'Add to Cart', 'Purchases'],
+        labels: ['Browse', 'Start Watching', 'Engaged (30min+)', 'Complete'],
         datasets: [{
-          label: 'User Actions',
-          data: [funnel.views, funnel.clicks, funnel.addToCarts, funnel.purchases],
+          label: 'Viewer Journey',
+          data: [funnel.browsing, funnel.starts, funnel.midpoint, funnel.completions],
           backgroundColor: [
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(16, 185, 129, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
             'rgba(245, 158, 11, 0.8)',
-            'rgba(239, 68, 68, 0.8)'
+            'rgba(34, 197, 94, 0.8)',
+            'rgba(168, 85, 247, 0.8)'
           ],
           borderColor: [
-            'rgb(59, 130, 246)',
-            'rgb(16, 185, 129)',
+            'rgb(239, 68, 68)',
             'rgb(245, 158, 11)',
-            'rgb(239, 68, 68)'
+            'rgb(34, 197, 94)',
+            'rgb(168, 85, 247)'
           ],
           borderWidth: 2,
           borderRadius: 8
@@ -100,7 +100,8 @@ export class Dashboard {
         plugins: {
           title: {
             display: true,
-            text: 'Conversion Funnel Analysis'
+            text: 'Viewing Funnel Analysis',
+            color: '#ffffff'
           },
           legend: {
             display: false
@@ -110,12 +111,18 @@ export class Dashboard {
           y: {
             beginAtZero: true,
             grid: {
-              color: 'rgba(0, 0, 0, 0.1)'
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+              color: '#ffffff'
             }
           },
           x: {
             grid: {
               display: false
+            },
+            ticks: {
+              color: '#ffffff'
             }
           }
         }
@@ -123,24 +130,25 @@ export class Dashboard {
     });
   }
 
-  renderCategoryPerformance() {
-    const categoryData = this.analytics.getCategoryPerformance();
-    const ctx = document.getElementById('categoryChart');
+  renderGenrePerformance() {
+    const genreData = this.analytics.getGenrePerformance();
+    const ctx = document.getElementById('genreChart');
     
     if (!ctx) return;
     
-    this.charts.category = new Chart(ctx, {
+    this.charts.genre = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: categoryData.map(c => c.category.charAt(0).toUpperCase() + c.category.slice(1)),
+        labels: genreData.map(g => g.genre.charAt(0).toUpperCase() + g.genre.slice(1)),
         datasets: [{
-          data: categoryData.map(c => c.revenue),
+          data: genreData.map(g => g.totalWatchTime),
           backgroundColor: [
-            '#3B82F6', '#10B981', '#F59E0B', '#EF4444',
-            '#8B5CF6', '#06B6D4', '#84CC16', '#F97316'
+            '#EF4444', '#F59E0B', '#10B981', '#3B82F6',
+            '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16',
+            '#F97316', '#6366F1'
           ],
           borderWidth: 2,
-          borderColor: '#ffffff'
+          borderColor: '#1F2937'
         }]
       },
       options: {
@@ -148,37 +156,42 @@ export class Dashboard {
         plugins: {
           title: {
             display: true,
-            text: 'Revenue by Category'
+            text: 'Watch Time by Genre',
+            color: '#ffffff'
           },
           legend: {
-            position: 'bottom'
+            position: 'bottom',
+            labels: {
+              color: '#ffffff'
+            }
           }
         }
       }
     });
   }
 
-  renderRevenueChart() {
-    const seasonalData = this.analytics.getSeasonalTrends();
-    const months = Object.keys(seasonalData);
-    const revenues = Object.values(seasonalData).map(d => d.revenue);
+  renderEngagementChart() {
+    const patterns = this.analytics.getViewingPatterns();
+    const hourlyData = Object.entries(patterns.hourly)
+      .sort(([a], [b]) => parseInt(a) - parseInt(b))
+      .map(([hour, count]) => ({ hour: parseInt(hour), count }));
     
-    const ctx = document.getElementById('revenueChart');
+    const ctx = document.getElementById('engagementChart');
     if (!ctx) return;
     
-    this.charts.revenue = new Chart(ctx, {
+    this.charts.engagement = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: months,
+        labels: hourlyData.map(d => `${d.hour}:00`),
         datasets: [{
-          label: 'Revenue',
-          data: revenues,
-          borderColor: 'rgb(59, 130, 246)',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          label: 'Viewing Activity',
+          data: hourlyData.map(d => d.count),
+          borderColor: 'rgb(239, 68, 68)',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
           borderWidth: 3,
           fill: true,
           tension: 0.4,
-          pointBackgroundColor: 'rgb(59, 130, 246)',
+          pointBackgroundColor: 'rgb(239, 68, 68)',
           pointBorderColor: '#ffffff',
           pointBorderWidth: 2,
           pointRadius: 6
@@ -189,24 +202,31 @@ export class Dashboard {
         plugins: {
           title: {
             display: true,
-            text: 'Revenue Trends Over Time'
+            text: 'Viewing Activity by Hour',
+            color: '#ffffff'
+          },
+          legend: {
+            labels: {
+              color: '#ffffff'
+            }
           }
         },
         scales: {
           y: {
             beginAtZero: true,
             grid: {
-              color: 'rgba(0, 0, 0, 0.1)'
+              color: 'rgba(255, 255, 255, 0.1)'
             },
             ticks: {
-              callback: function(value) {
-                return '$' + value.toLocaleString();
-              }
+              color: '#ffffff'
             }
           },
           x: {
             grid: {
               display: false
+            },
+            ticks: {
+              color: '#ffffff'
             }
           }
         }
@@ -214,30 +234,30 @@ export class Dashboard {
     });
   }
 
-  renderTopProducts() {
-    const topProducts = this.analytics.getTopPerformingProducts(5);
-    const container = document.getElementById('top-products');
+  renderTopContent() {
+    const topContent = this.analytics.getTopPerformingContent(5);
+    const container = document.getElementById('top-content');
     
     if (!container) return;
     
     container.innerHTML = `
-      <div class="bg-white rounded-xl shadow-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Performing Products</h3>
+      <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+        <h3 class="text-lg font-semibold text-white mb-4">Top Performing Content</h3>
         <div class="space-y-4">
-          ${topProducts.map((product, index) => `
-            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          ${topContent.map((content, index) => `
+            <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
               <div class="flex items-center space-x-4">
-                <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
+                <div class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold">
                   ${index + 1}
                 </div>
                 <div>
-                  <h4 class="font-medium text-gray-900">${product.name}</h4>
-                  <p class="text-sm text-gray-500">${product.category}</p>
+                  <h4 class="font-medium text-white">${content.title}</h4>
+                  <p class="text-sm text-gray-400">${content.type} • ${content.genre}</p>
                 </div>
               </div>
               <div class="text-right">
-                <p class="font-semibold text-gray-900">$${product.revenue.toLocaleString()}</p>
-                <p class="text-sm text-gray-500">${product.conversionRate}% conversion</p>
+                <p class="font-semibold text-white">${content.totalViews.toLocaleString()} views</p>
+                <p class="text-sm text-gray-400">${content.completionRate}% completion</p>
               </div>
             </div>
           `).join('')}
@@ -246,29 +266,33 @@ export class Dashboard {
     `;
   }
 
-  renderPriceOptimization() {
-    const suggestions = this.analytics.getPriceOptimizationSuggestions().slice(0, 5);
-    const container = document.getElementById('price-optimization');
+  renderContentPerformance() {
+    const genrePerf = this.analytics.getGenrePerformance().slice(0, 5);
+    const container = document.getElementById('content-performance');
     
     if (!container) return;
     
     container.innerHTML = `
-      <div class="bg-white rounded-xl shadow-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Price Optimization Suggestions</h3>
+      <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+        <h3 class="text-lg font-semibold text-white mb-4">Genre Performance Analysis</h3>
         <div class="space-y-4">
-          ${suggestions.map(suggestion => `
-            <div class="border border-gray-200 rounded-lg p-4">
+          ${genrePerf.map(genre => `
+            <div class="border border-gray-700 rounded-lg p-4">
               <div class="flex items-start justify-between mb-2">
-                <h4 class="font-medium text-gray-900">${suggestion.productName}</h4>
-                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                  ${suggestion.confidence}% confidence
+                <h4 class="font-medium text-white capitalize">${genre.genre}</h4>
+                <span class="px-2 py-1 text-xs font-medium bg-red-900 bg-opacity-50 text-red-300 rounded-full">
+                  ${genre.engagementScore} score
                 </span>
               </div>
-              <p class="text-sm text-gray-600 mb-2">${suggestion.suggestion}</p>
-              <div class="flex items-center space-x-4 text-xs text-gray-500">
-                <span>Current: $${suggestion.currentPrice}</span>
-                <span>Category Avg: $${suggestion.categoryAverage}</span>
-                <span>Conversion: ${suggestion.conversionRate}%</span>
+              <div class="grid grid-cols-2 gap-4 text-xs text-gray-400">
+                <div>
+                  <span class="block">Watch Time: ${Math.round(genre.totalWatchTime / 60)}h</span>
+                  <span class="block">Avg Rating: ${genre.avgRating}</span>
+                </div>
+                <div>
+                  <span class="block">Content: ${genre.contentCount} titles</span>
+                  <span class="block">Views: ${genre.viewCount.toLocaleString()}</span>
+                </div>
               </div>
             </div>
           `).join('')}
@@ -277,68 +301,78 @@ export class Dashboard {
     `;
   }
 
-  renderMarketBasket() {
-    const associations = this.analytics.getMarketBasketAnalysis();
-    const container = document.getElementById('market-basket');
-    
-    if (!container) return;
-    
-    container.innerHTML = `
-      <div class="bg-white rounded-xl shadow-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Market Basket Analysis</h3>
-        <p class="text-sm text-gray-600 mb-4">Products frequently bought together</p>
-        <div class="space-y-3">
-          ${associations.map(assoc => `
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div class="flex items-center space-x-2">
-                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                  ${assoc.antecedent}
-                </span>
-                <i class="fas fa-arrow-right text-gray-400"></i>
-                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
-                  ${assoc.consequent}
-                </span>
-              </div>
-              <div class="text-right text-sm">
-                <div class="font-medium text-gray-900">${(assoc.confidence * 100).toFixed(1)}%</div>
-                <div class="text-gray-500">${assoc.frequency} times</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  renderUserSegmentation() {
-    const segments = this.analytics.getUserSegmentation();
-    const container = document.getElementById('user-segments');
+  renderAudienceSegmentation() {
+    const segments = this.analytics.getAudienceSegmentation();
+    const container = document.getElementById('audience-segments');
     
     if (!container) return;
     
     const segmentData = [
-      { name: 'High Value', count: segments.highValue.length, color: 'bg-green-500' },
-      { name: 'Frequent Users', count: segments.frequent.length, color: 'bg-blue-500' },
-      { name: 'New Users', count: segments.newUsers.length, color: 'bg-yellow-500' },
-      { name: 'At Risk', count: segments.atRisk.length, color: 'bg-red-500' }
+      { name: 'Binge Watchers', count: segments.bingeWatchers.length, color: 'bg-red-600', description: '3+ hours/day' },
+      { name: 'Casual Viewers', count: segments.casualViewers.length, color: 'bg-blue-600', description: '<1 hour/day' },
+      { name: 'Genre Lovers', count: segments.genreLovers.length, color: 'bg-purple-600', description: '1-2 genres' },
+      { name: 'New Users', count: segments.newUsers.length, color: 'bg-green-600', description: '<7 days' }
     ];
     
     container.innerHTML = `
-      <div class="bg-white rounded-xl shadow-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">User Segmentation</h3>
+      <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+        <h3 class="text-lg font-semibold text-white mb-4">Audience Segmentation</h3>
         <div class="grid grid-cols-2 gap-4">
           ${segmentData.map(segment => `
-            <div class="text-center p-4 bg-gray-50 rounded-lg">
+            <div class="text-center p-4 bg-gray-800 rounded-lg border border-gray-700">
               <div class="w-12 h-12 ${segment.color} rounded-full mx-auto mb-2 flex items-center justify-center">
                 <span class="text-white font-bold text-lg">${segment.count}</span>
               </div>
-              <h4 class="font-medium text-gray-900">${segment.name}</h4>
-              <p class="text-sm text-gray-500">users</p>
+              <h4 class="font-medium text-white text-sm">${segment.name}</h4>
+              <p class="text-xs text-gray-400">${segment.description}</p>
             </div>
           `).join('')}
         </div>
       </div>
     `;
+  }
+
+  renderViewingPatterns() {
+    const patterns = this.analytics.getViewingPatterns();
+    const deviceData = Object.entries(patterns.deviceUsage);
+    const container = document.getElementById('viewing-patterns');
+    
+    if (!container) return;
+    
+    container.innerHTML = `
+      <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+        <h3 class="text-lg font-semibold text-white mb-4">Device Usage Patterns</h3>
+        <div class="space-y-3">
+          ${deviceData.map(([device, count]) => {
+            const percentage = (count / deviceData.reduce((sum, [,c]) => sum + c, 0) * 100).toFixed(1);
+            return `
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <i class="fas fa-${this.getDeviceIcon(device)} text-gray-400"></i>
+                  <span class="text-white capitalize">${device.replace('_', ' ')}</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <div class="w-24 bg-gray-700 rounded-full h-2">
+                    <div class="bg-red-600 h-2 rounded-full" style="width: ${percentage}%"></div>
+                  </div>
+                  <span class="text-gray-400 text-sm w-12">${percentage}%</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  getDeviceIcon(device) {
+    const icons = {
+      smart_tv: 'tv',
+      mobile: 'mobile-alt',
+      desktop: 'desktop',
+      tablet: 'tablet-alt'
+    };
+    return icons[device] || 'device';
   }
 
   renderInsights() {
@@ -347,46 +381,46 @@ export class Dashboard {
     
     const insights = [
       {
-        title: "Peak Shopping Hours",
-        description: "Most purchases occur between 2-4 PM and 7-9 PM",
-        action: "Schedule promotions during these peak hours",
+        title: "Peak Viewing Hours",
+        description: "Most viewing activity occurs between 8-11 PM across all time zones",
+        action: "Schedule new releases and promotions during prime time",
         impact: "High"
       },
       {
-        title: "Mobile vs Desktop",
-        description: "60% of traffic is mobile, but desktop has 2x higher conversion",
-        action: "Optimize mobile checkout experience",
+        title: "Mobile vs TV Viewing",
+        description: "Mobile accounts for 35% of starts but only 20% of completions",
+        action: "Optimize mobile experience for longer viewing sessions",
         impact: "High"
       },
       {
-        title: "Seasonal Patterns",
-        description: "Electronics peak in November, Clothing in March/September",
-        action: "Adjust inventory and marketing calendar",
+        title: "Binge-Watching Patterns",
+        description: "Series with 6-8 episodes show highest completion rates",
+        action: "Consider limited series format for new content",
         impact: "Medium"
       },
       {
-        title: "Price Sensitivity",
-        description: "Products priced 15% below category average show 40% higher conversion",
-        action: "Review pricing strategy for underperforming items",
+        title: "Genre Preferences by Age",
+        description: "18-34 prefer thriller/sci-fi, 35+ prefer drama/documentary",
+        action: "Personalize homepage recommendations by age group",
         impact: "High"
       }
     ];
     
     container.innerHTML = `
-      <div class="bg-white rounded-xl shadow-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">
-          <i class="fas fa-brain mr-2 text-purple-500"></i>
+      <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+        <h3 class="text-lg font-semibold text-white mb-4">
+          <i class="fas fa-brain mr-2 text-red-500"></i>
           AI-Powered Insights
         </h3>
         <div class="space-y-4">
           ${insights.map(insight => `
-            <div class="border-l-4 border-purple-500 pl-4 py-2">
-              <h4 class="font-medium text-gray-900 mb-1">${insight.title}</h4>
-              <p class="text-sm text-gray-600 mb-2">${insight.description}</p>
+            <div class="border-l-4 border-red-600 pl-4 py-2">
+              <h4 class="font-medium text-white mb-1">${insight.title}</h4>
+              <p class="text-sm text-gray-400 mb-2">${insight.description}</p>
               <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-purple-600">${insight.action}</p>
+                <p class="text-sm font-medium text-red-400">${insight.action}</p>
                 <span class="px-2 py-1 text-xs font-medium rounded-full ${
-                  insight.impact === 'High' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                  insight.impact === 'High' ? 'bg-red-900 bg-opacity-50 text-red-300' : 'bg-yellow-900 bg-opacity-50 text-yellow-300'
                 }">
                   ${insight.impact} Impact
                 </span>

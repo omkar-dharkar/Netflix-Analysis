@@ -1,45 +1,68 @@
-import { products } from './products.js';
+import { netflixContent } from './content.js';
 import * as ss from 'simple-statistics';
 
-export class AnalyticsEngine {
+export class NetflixAnalyticsEngine {
   constructor() {
-    this.products = products;
-    this.userInteractions = this.generateMockUserData();
-    this.marketTrends = this.generateMarketTrends();
-    this.priceHistory = this.generatePriceHistory();
+    this.content = netflixContent;
+    this.viewingData = this.generateMockViewingData();
+    this.userProfiles = this.generateUserProfiles();
+    this.engagementMetrics = this.generateEngagementMetrics();
   }
 
-  // Generate realistic mock user interaction data
-  generateMockUserData() {
-    const interactions = [];
-    const actionTypes = ['view', 'click', 'add_to_cart', 'purchase', 'search'];
+  // Generate realistic mock viewing data
+  generateMockViewingData() {
+    const viewingData = [];
+    const actionTypes = ['start', 'pause', 'resume', 'complete', 'skip', 'rewatch'];
     const timeRanges = this.generateTimeRanges(30); // Last 30 days
+    const devices = ['smart_tv', 'mobile', 'desktop', 'tablet'];
     
-    for (let i = 0; i < 10000; i++) {
-      const product = this.products[Math.floor(Math.random() * this.products.length)];
+    for (let i = 0; i < 50000; i++) {
+      const content = this.content[Math.floor(Math.random() * this.content.length)];
       const timestamp = timeRanges[Math.floor(Math.random() * timeRanges.length)];
       const action = actionTypes[Math.floor(Math.random() * actionTypes.length)];
+      const device = devices[Math.floor(Math.random() * devices.length)];
       
-      // Bias interactions based on product popularity
-      const popularityWeight = product.popularity / 100;
+      // Bias viewing based on content popularity
+      const popularityWeight = content.popularity / 100;
       if (Math.random() < popularityWeight) {
-        interactions.push({
+        viewingData.push({
           id: i,
-          productId: product.id,
-          productName: product.name,
-          category: product.category,
+          contentId: content.id,
+          contentTitle: content.title,
+          contentType: content.type,
+          genre: content.genre,
           action: action,
           timestamp: timestamp,
-          userId: `user_${Math.floor(Math.random() * 1000)}`,
-          sessionId: `session_${Math.floor(Math.random() * 5000)}`,
-          price: product.price,
-          deviceType: Math.random() > 0.6 ? 'mobile' : 'desktop',
-          location: this.getRandomLocation()
+          userId: `user_${Math.floor(Math.random() * 5000)}`,
+          sessionId: `session_${Math.floor(Math.random() * 20000)}`,
+          device: device,
+          watchTime: this.generateWatchTime(content, action),
+          location: this.getRandomLocation(),
+          userAge: Math.floor(Math.random() * 60) + 18,
+          userGender: Math.random() > 0.5 ? 'M' : 'F'
         });
       }
     }
     
-    return interactions.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    return viewingData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  }
+
+  generateWatchTime(content, action) {
+    const baseTime = content.type === 'movie' ? 
+      (content.runtime || 120) : 
+      (content.episodes ? content.episodes * 45 : 45);
+    
+    switch (action) {
+      case 'complete':
+        return Math.floor(baseTime * (0.8 + Math.random() * 0.2)); // 80-100% completion
+      case 'skip':
+        return Math.floor(baseTime * Math.random() * 0.3); // 0-30% watched
+      case 'pause':
+      case 'resume':
+        return Math.floor(baseTime * Math.random() * 0.7); // 0-70% watched
+      default:
+        return Math.floor(baseTime * Math.random());
+    }
   }
 
   generateTimeRanges(days) {
@@ -50,402 +73,351 @@ export class AnalyticsEngine {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       
-      // Generate multiple timestamps per day
-      for (let hour = 0; hour < 24; hour += Math.random() * 3) {
-        const timestamp = new Date(date);
-        timestamp.setHours(Math.floor(hour), Math.floor(Math.random() * 60));
-        ranges.push(timestamp.toISOString());
-      }
+      // Generate multiple timestamps per day with realistic viewing patterns
+      const peakHours = [19, 20, 21, 22]; // Prime time
+      const regularHours = [7, 8, 12, 13, 14, 15, 16, 17, 18, 23];
+      
+      [...peakHours, ...peakHours, ...regularHours].forEach(hour => {
+        if (Math.random() > 0.3) { // 70% chance of activity in each hour
+          const timestamp = new Date(date);
+          timestamp.setHours(hour, Math.floor(Math.random() * 60));
+          ranges.push(timestamp.toISOString());
+        }
+      });
     }
     
     return ranges;
   }
 
+  generateUserProfiles() {
+    const profiles = {};
+    const ageGroups = ['18-24', '25-34', '35-44', '45-54', '55+'];
+    const preferences = ['binge_watcher', 'casual_viewer', 'genre_specific', 'new_releases'];
+    
+    for (let i = 0; i < 5000; i++) {
+      const userId = `user_${i}`;
+      profiles[userId] = {
+        ageGroup: ageGroups[Math.floor(Math.random() * ageGroups.length)],
+        preferredGenres: this.getRandomGenres(2 + Math.floor(Math.random() * 3)),
+        viewingPattern: preferences[Math.floor(Math.random() * preferences.length)],
+        avgSessionLength: 30 + Math.floor(Math.random() * 120), // 30-150 minutes
+        preferredDevice: ['smart_tv', 'mobile', 'desktop', 'tablet'][Math.floor(Math.random() * 4)],
+        subscriptionTier: Math.random() > 0.7 ? 'premium' : 'standard'
+      };
+    }
+    
+    return profiles;
+  }
+
+  getRandomGenres(count) {
+    const genres = ['action', 'comedy', 'drama', 'thriller', 'documentary', 'romance', 'horror', 'sci-fi', 'animation'];
+    const shuffled = genres.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  }
+
+  generateEngagementMetrics() {
+    const metrics = {};
+    
+    this.content.forEach(content => {
+      const contentViews = this.viewingData.filter(v => v.contentId === content.id);
+      const completions = contentViews.filter(v => v.action === 'complete');
+      const starts = contentViews.filter(v => v.action === 'start');
+      
+      metrics[content.id] = {
+        totalViews: starts.length,
+        completionRate: starts.length > 0 ? (completions.length / starts.length * 100).toFixed(2) : 0,
+        avgWatchTime: contentViews.length > 0 ? 
+          ss.mean(contentViews.map(v => v.watchTime)).toFixed(2) : 0,
+        rewatchRate: this.calculateRewatchRate(contentViews),
+        deviceBreakdown: this.getDeviceBreakdown(contentViews),
+        peakViewingHours: this.getPeakViewingHours(contentViews)
+      };
+    });
+    
+    return metrics;
+  }
+
+  calculateRewatchRate(views) {
+    const rewatches = views.filter(v => v.action === 'rewatch');
+    const totalViews = views.filter(v => v.action === 'start');
+    return totalViews.length > 0 ? (rewatches.length / totalViews.length * 100).toFixed(2) : 0;
+  }
+
+  getDeviceBreakdown(views) {
+    const devices = {};
+    views.forEach(view => {
+      devices[view.device] = (devices[view.device] || 0) + 1;
+    });
+    return devices;
+  }
+
+  getPeakViewingHours(views) {
+    const hours = {};
+    views.forEach(view => {
+      const hour = new Date(view.timestamp).getHours();
+      hours[hour] = (hours[hour] || 0) + 1;
+    });
+    
+    const sortedHours = Object.entries(hours)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([hour]) => parseInt(hour));
+    
+    return sortedHours;
+  }
+
   getRandomLocation() {
     const locations = [
-      'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX',
-      'Phoenix, AZ', 'Philadelphia, PA', 'San Antonio, TX', 'San Diego, CA',
-      'Dallas, TX', 'San Jose, CA', 'Austin, TX', 'Jacksonville, FL'
+      'Los Angeles, CA', 'New York, NY', 'London, UK', 'Toronto, CA',
+      'Sydney, AU', 'Berlin, DE', 'Tokyo, JP', 'São Paulo, BR',
+      'Mumbai, IN', 'Mexico City, MX', 'Paris, FR', 'Seoul, KR'
     ];
     return locations[Math.floor(Math.random() * locations.length)];
   }
 
-  generateMarketTrends() {
-    const categories = [...new Set(this.products.map(p => p.category))];
-    const trends = {};
-    
-    categories.forEach(category => {
-      const categoryProducts = this.products.filter(p => p.category === category);
-      const avgPrice = ss.mean(categoryProducts.map(p => p.price));
-      const avgPopularity = ss.mean(categoryProducts.map(p => p.popularity));
-      
-      trends[category] = {
-        averagePrice: avgPrice,
-        averagePopularity: avgPopularity,
-        productCount: categoryProducts.length,
-        growthRate: (Math.random() - 0.5) * 20, // -10% to +10%
-        seasonalityIndex: Math.random() * 2,
-        competitionIndex: Math.random() * 100
-      };
-    });
-    
-    return trends;
-  }
-
-  generatePriceHistory() {
-    const history = {};
-    
-    this.products.forEach(product => {
-      const pricePoints = [];
-      const basePrice = product.price;
-      const days = 90;
-      
-      for (let i = days; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        
-        // Add some realistic price fluctuation
-        const volatility = 0.1; // 10% volatility
-        const randomFactor = (Math.random() - 0.5) * volatility;
-        const seasonalFactor = Math.sin((i / days) * Math.PI * 2) * 0.05;
-        const price = basePrice * (1 + randomFactor + seasonalFactor);
-        
-        pricePoints.push({
-          date: date.toISOString().split('T')[0],
-          price: Math.round(price * 100) / 100
-        });
-      }
-      
-      history[product.id] = pricePoints;
-    });
-    
-    return history;
-  }
-
   // Advanced Analytics Methods
   
-  getConversionFunnel() {
+  getViewingFunnel() {
     const funnel = {
-      views: this.userInteractions.filter(i => i.action === 'view').length,
-      clicks: this.userInteractions.filter(i => i.action === 'click').length,
-      addToCarts: this.userInteractions.filter(i => i.action === 'add_to_cart').length,
-      purchases: this.userInteractions.filter(i => i.action === 'purchase').length
+      browsing: this.viewingData.length,
+      starts: this.viewingData.filter(v => v.action === 'start').length,
+      midpoint: this.viewingData.filter(v => v.watchTime > 30).length,
+      completions: this.viewingData.filter(v => v.action === 'complete').length
     };
     
-    funnel.clickRate = (funnel.clicks / funnel.views * 100).toFixed(2);
-    funnel.cartRate = (funnel.addToCarts / funnel.clicks * 100).toFixed(2);
-    funnel.conversionRate = (funnel.purchases / funnel.addToCarts * 100).toFixed(2);
+    funnel.startRate = (funnel.starts / funnel.browsing * 100).toFixed(2);
+    funnel.engagementRate = (funnel.midpoint / funnel.starts * 100).toFixed(2);
+    funnel.completionRate = (funnel.completions / funnel.starts * 100).toFixed(2);
     
     return funnel;
   }
 
-  getCategoryPerformance() {
-    const categories = [...new Set(this.products.map(p => p.category))];
+  getGenrePerformance() {
+    const genres = [...new Set(this.content.map(c => c.genre))];
     
-    return categories.map(category => {
-      const categoryInteractions = this.userInteractions.filter(i => i.category === category);
-      const categoryProducts = this.products.filter(p => p.category === category);
+    return genres.map(genre => {
+      const genreContent = this.content.filter(c => c.genre === genre);
+      const genreViews = this.viewingData.filter(v => v.genre === genre);
       
-      const revenue = categoryInteractions
-        .filter(i => i.action === 'purchase')
-        .reduce((sum, i) => sum + i.price, 0);
-      
-      const avgPrice = ss.mean(categoryProducts.map(p => p.price));
-      const avgPopularity = ss.mean(categoryProducts.map(p => p.popularity));
+      const totalWatchTime = genreViews.reduce((sum, v) => sum + v.watchTime, 0);
+      const avgRating = ss.mean(genreContent.map(c => c.rating));
+      const avgPopularity = ss.mean(genreContent.map(c => c.popularity));
       
       return {
-        category,
-        revenue,
-        interactions: categoryInteractions.length,
-        products: categoryProducts.length,
-        avgPrice,
-        avgPopularity,
-        revenuePerProduct: revenue / categoryProducts.length,
-        engagementScore: categoryInteractions.length / categoryProducts.length
+        genre,
+        totalWatchTime,
+        viewCount: genreViews.length,
+        contentCount: genreContent.length,
+        avgRating: avgRating.toFixed(2),
+        avgPopularity: avgPopularity.toFixed(1),
+        watchTimePerContent: (totalWatchTime / genreContent.length).toFixed(0),
+        engagementScore: (genreViews.length * avgPopularity / 100).toFixed(0)
       };
-    }).sort((a, b) => b.revenue - a.revenue);
+    }).sort((a, b) => b.totalWatchTime - a.totalWatchTime);
   }
 
-  getTopPerformingProducts(limit = 10) {
-    const productStats = {};
+  getTopPerformingContent(limit = 10) {
+    const contentStats = {};
     
-    this.products.forEach(product => {
-      const interactions = this.userInteractions.filter(i => i.productId === product.id);
-      const purchases = interactions.filter(i => i.action === 'purchase');
-      const views = interactions.filter(i => i.action === 'view');
+    this.content.forEach(content => {
+      const views = this.viewingData.filter(v => v.contentId === content.id);
+      const completions = views.filter(v => v.action === 'complete');
+      const starts = views.filter(v => v.action === 'start');
       
-      productStats[product.id] = {
-        ...product,
-        totalInteractions: interactions.length,
-        totalPurchases: purchases.length,
-        totalViews: views.length,
-        revenue: purchases.reduce((sum, p) => sum + p.price, 0),
-        conversionRate: views.length > 0 ? (purchases.length / views.length * 100).toFixed(2) : 0,
-        engagementScore: interactions.length * (product.popularity / 100)
+      contentStats[content.id] = {
+        ...content,
+        totalViews: starts.length,
+        totalCompletions: completions.length,
+        totalWatchTime: views.reduce((sum, v) => sum + v.watchTime, 0),
+        completionRate: starts.length > 0 ? (completions.length / starts.length * 100).toFixed(2) : 0,
+        engagementScore: (starts.length * (content.popularity / 100) * content.rating).toFixed(0)
       };
     });
     
-    return Object.values(productStats)
+    return Object.values(contentStats)
       .sort((a, b) => b.engagementScore - a.engagementScore)
       .slice(0, limit);
   }
 
-  getPriceOptimizationSuggestions() {
-    const suggestions = [];
+  getAudienceSegmentation() {
+    const segments = {
+      bingeWatchers: [],
+      casualViewers: [],
+      genreLovers: [],
+      newUsers: []
+    };
     
-    this.products.forEach(product => {
-      const categoryProducts = this.products.filter(p => p.category === product.category);
-      const categoryPrices = categoryProducts.map(p => p.price);
-      const avgCategoryPrice = ss.mean(categoryPrices);
-      const pricePercentile = ss.quantileRank(categoryPrices, product.price);
-      
-      const interactions = this.userInteractions.filter(i => i.productId === product.id);
-      const conversionRate = this.calculateConversionRate(interactions);
-      
-      let suggestion = '';
-      let confidence = 0;
-      
-      if (pricePercentile > 0.8 && conversionRate < 5) {
-        suggestion = 'Consider reducing price - currently priced high with low conversion';
-        confidence = 85;
-      } else if (pricePercentile < 0.2 && conversionRate > 15) {
-        suggestion = 'Consider increasing price - high demand suggests price elasticity';
-        confidence = 75;
-      } else if (product.popularity > 90 && pricePercentile < 0.5) {
-        suggestion = 'Premium pricing opportunity - high popularity with competitive price';
-        confidence = 70;
-      }
-      
-      if (suggestion) {
-        suggestions.push({
-          productId: product.id,
-          productName: product.name,
-          currentPrice: product.price,
-          categoryAverage: avgCategoryPrice.toFixed(2),
-          pricePercentile: (pricePercentile * 100).toFixed(1),
-          conversionRate: conversionRate.toFixed(2),
-          suggestion,
-          confidence
-        });
-      }
-    });
-    
-    return suggestions.sort((a, b) => b.confidence - a.confidence);
-  }
-
-  calculateConversionRate(interactions) {
-    const views = interactions.filter(i => i.action === 'view').length;
-    const purchases = interactions.filter(i => i.action === 'purchase').length;
-    return views > 0 ? (purchases / views * 100) : 0;
-  }
-
-  getSeasonalTrends() {
-    const monthlyData = {};
-    
-    this.userInteractions.forEach(interaction => {
-      const month = new Date(interaction.timestamp).toLocaleString('default', { month: 'long' });
-      if (!monthlyData[month]) {
-        monthlyData[month] = { interactions: 0, revenue: 0, categories: {} };
-      }
-      
-      monthlyData[month].interactions++;
-      
-      if (interaction.action === 'purchase') {
-        monthlyData[month].revenue += interaction.price;
-      }
-      
-      if (!monthlyData[month].categories[interaction.category]) {
-        monthlyData[month].categories[interaction.category] = 0;
-      }
-      monthlyData[month].categories[interaction.category]++;
-    });
-    
-    return monthlyData;
-  }
-
-  getUserSegmentation() {
     const userStats = {};
     
-    this.userInteractions.forEach(interaction => {
-      if (!userStats[interaction.userId]) {
-        userStats[interaction.userId] = {
-          totalInteractions: 0,
-          totalSpent: 0,
-          categories: new Set(),
-          deviceTypes: new Set(),
-          firstSeen: interaction.timestamp,
-          lastSeen: interaction.timestamp
+    this.viewingData.forEach(view => {
+      if (!userStats[view.userId]) {
+        userStats[view.userId] = {
+          totalWatchTime: 0,
+          sessionsCount: 0,
+          genresWatched: new Set(),
+          avgSessionLength: 0,
+          firstSeen: view.timestamp,
+          lastSeen: view.timestamp,
+          completions: 0
         };
       }
       
-      const user = userStats[interaction.userId];
-      user.totalInteractions++;
-      user.categories.add(interaction.category);
-      user.deviceTypes.add(interaction.deviceType);
+      const user = userStats[view.userId];
+      user.totalWatchTime += view.watchTime;
+      user.genresWatched.add(view.genre);
       
-      if (interaction.action === 'purchase') {
-        user.totalSpent += interaction.price;
+      if (view.action === 'complete') {
+        user.completions++;
       }
       
-      if (new Date(interaction.timestamp) < new Date(user.firstSeen)) {
-        user.firstSeen = interaction.timestamp;
+      if (new Date(view.timestamp) < new Date(user.firstSeen)) {
+        user.firstSeen = view.timestamp;
       }
-      if (new Date(interaction.timestamp) > new Date(user.lastSeen)) {
-        user.lastSeen = interaction.timestamp;
+      if (new Date(view.timestamp) > new Date(user.lastSeen)) {
+        user.lastSeen = view.timestamp;
       }
     });
     
-    // Segment users
-    const segments = {
-      highValue: [],
-      frequent: [],
-      newUsers: [],
-      atRisk: []
-    };
-    
     Object.entries(userStats).forEach(([userId, stats]) => {
       const daysSinceFirst = (new Date() - new Date(stats.firstSeen)) / (1000 * 60 * 60 * 24);
-      const daysSinceLast = (new Date() - new Date(stats.lastSeen)) / (1000 * 60 * 60 * 24);
+      const avgWatchTime = stats.totalWatchTime / Math.max(1, daysSinceFirst);
       
-      if (stats.totalSpent > 500) {
-        segments.highValue.push({ userId, ...stats });
+      if (avgWatchTime > 180) { // 3+ hours per day
+        segments.bingeWatchers.push({ userId, ...stats });
+      } else if (avgWatchTime < 60) { // Less than 1 hour per day
+        segments.casualViewers.push({ userId, ...stats });
       }
-      if (stats.totalInteractions > 50) {
-        segments.frequent.push({ userId, ...stats });
+      
+      if (stats.genresWatched.size <= 2) {
+        segments.genreLovers.push({ userId, ...stats });
       }
+      
       if (daysSinceFirst < 7) {
         segments.newUsers.push({ userId, ...stats });
-      }
-      if (daysSinceLast > 14 && stats.totalSpent > 0) {
-        segments.atRisk.push({ userId, ...stats });
       }
     });
     
     return segments;
   }
 
-  getMarketBasketAnalysis() {
-    const baskets = {};
-    const coOccurrences = {};
+  getContentRecommendations(genre) {
+    const genreContent = this.content.filter(c => c.genre === genre);
+    const genreViews = this.viewingData.filter(v => v.genre === genre);
     
-    // Group purchases by session
-    this.userInteractions
-      .filter(i => i.action === 'purchase')
-      .forEach(interaction => {
-        if (!baskets[interaction.sessionId]) {
-          baskets[interaction.sessionId] = [];
-        }
-        baskets[interaction.sessionId].push(interaction.category);
+    // Calculate recommendation score based on rating, popularity, and recent viewing trends
+    const recommendations = genreContent.map(content => {
+      const contentViews = genreViews.filter(v => v.contentId === content.id);
+      const recentViews = contentViews.filter(v => {
+        const viewDate = new Date(v.timestamp);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return viewDate > weekAgo;
       });
-    
-    // Calculate co-occurrence matrix
-    Object.values(baskets).forEach(basket => {
-      for (let i = 0; i < basket.length; i++) {
-        for (let j = i + 1; j < basket.length; j++) {
-          const pair = [basket[i], basket[j]].sort().join('-');
-          coOccurrences[pair] = (coOccurrences[pair] || 0) + 1;
-        }
-      }
+      
+      const trendingScore = recentViews.length * 10;
+      const qualityScore = content.rating * 10;
+      const popularityScore = content.popularity;
+      
+      return {
+        ...content,
+        recommendationScore: (trendingScore + qualityScore + popularityScore) / 3,
+        recentViews: recentViews.length,
+        reason: this.getRecommendationReason(content, recentViews.length)
+      };
     });
     
-    // Convert to association rules
-    const associations = Object.entries(coOccurrences)
-      .map(([pair, count]) => {
-        const [cat1, cat2] = pair.split('-');
-        const support = count / Object.keys(baskets).length;
-        return {
-          antecedent: cat1,
-          consequent: cat2,
-          support: support.toFixed(3),
-          frequency: count,
-          confidence: (count / Object.values(baskets).filter(b => b.includes(cat1)).length).toFixed(3)
-        };
-      })
-      .sort((a, b) => b.frequency - a.frequency)
-      .slice(0, 10);
-    
-    return associations;
+    return recommendations
+      .sort((a, b) => b.recommendationScore - a.recommendationScore)
+      .slice(0, 5);
   }
 
-  predictDemand(productId, days = 30) {
-    const product = this.products.find(p => p.id === productId);
-    if (!product) return null;
-    
-    const historicalData = this.userInteractions
-      .filter(i => i.productId === productId && i.action === 'purchase')
-      .map(i => ({
-        date: new Date(i.timestamp).toISOString().split('T')[0],
-        sales: 1
-      }));
-    
-    // Simple moving average prediction
-    const recentSales = historicalData.slice(-7).length; // Last 7 days
-    const avgDailySales = recentSales / 7;
-    const predictedDemand = Math.round(avgDailySales * days);
-    
-    return {
-      productId,
-      productName: product.name,
-      historicalAverage: avgDailySales.toFixed(2),
-      predictedDemand,
-      confidence: Math.min(95, 60 + (recentSales * 5)), // Higher confidence with more data
-      factors: {
-        seasonality: product.category === 'clothing' ? 'High' : 'Medium',
-        trend: recentSales > avgDailySales ? 'Increasing' : 'Stable',
-        popularity: product.popularity
-      }
+  getRecommendationReason(content, recentViews) {
+    if (recentViews > 100) return 'Trending now';
+    if (content.rating > 8.5) return 'Critically acclaimed';
+    if (content.popularity > 90) return 'Highly popular';
+    if (content.year >= 2023) return 'New release';
+    return 'Recommended for you';
+  }
+
+  getViewingPatterns() {
+    const patterns = {
+      hourly: {},
+      daily: {},
+      deviceUsage: {},
+      genreByTime: {}
     };
+    
+    this.viewingData.forEach(view => {
+      const date = new Date(view.timestamp);
+      const hour = date.getHours();
+      const day = date.toLocaleDateString('en-US', { weekday: 'long' });
+      
+      // Hourly patterns
+      patterns.hourly[hour] = (patterns.hourly[hour] || 0) + 1;
+      
+      // Daily patterns
+      patterns.daily[day] = (patterns.daily[day] || 0) + 1;
+      
+      // Device usage
+      patterns.deviceUsage[view.device] = (patterns.deviceUsage[view.device] || 0) + 1;
+      
+      // Genre by time
+      const timeSlot = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+      if (!patterns.genreByTime[timeSlot]) patterns.genreByTime[timeSlot] = {};
+      patterns.genreByTime[timeSlot][view.genre] = (patterns.genreByTime[timeSlot][view.genre] || 0) + 1;
+    });
+    
+    return patterns;
   }
 
   generateInsights() {
     const insights = [];
     
-    // Revenue insights
-    const totalRevenue = this.userInteractions
-      .filter(i => i.action === 'purchase')
-      .reduce((sum, i) => sum + i.price, 0);
+    // Total viewing time insight
+    const totalWatchTime = this.viewingData.reduce((sum, v) => sum + v.watchTime, 0);
+    const avgDailyWatchTime = totalWatchTime / 30; // 30 days
     
     insights.push({
-      type: 'revenue',
-      title: 'Total Revenue Generated',
-      value: `$${totalRevenue.toLocaleString()}`,
-      trend: '+12.5%',
-      description: 'Based on simulated purchase data over the last 30 days'
+      type: 'viewing',
+      title: 'Total Watch Time',
+      value: `${Math.round(totalWatchTime / 60).toLocaleString()}h`,
+      trend: '+15.2%',
+      description: 'Total hours watched across all content in the last 30 days'
     });
     
-    // Top category insight
-    const categoryPerf = this.getCategoryPerformance();
-    const topCategory = categoryPerf[0];
+    // Top genre insight
+    const genrePerf = this.getGenrePerformance();
+    const topGenre = genrePerf[0];
     
     insights.push({
-      type: 'category',
-      title: 'Top Performing Category',
-      value: topCategory.category.charAt(0).toUpperCase() + topCategory.category.slice(1),
-      trend: `$${topCategory.revenue.toLocaleString()} revenue`,
-      description: `Generated ${((topCategory.revenue / totalRevenue) * 100).toFixed(1)}% of total revenue`
+      type: 'genre',
+      title: 'Most Watched Genre',
+      value: topGenre.genre.charAt(0).toUpperCase() + topGenre.genre.slice(1),
+      trend: `${topGenre.viewCount.toLocaleString()} views`,
+      description: `Accounts for ${((topGenre.totalWatchTime / totalWatchTime) * 100).toFixed(1)}% of total watch time`
     });
     
-    // Conversion rate insight
-    const funnel = this.getConversionFunnel();
-    
-    insights.push({
-      type: 'conversion',
-      title: 'Overall Conversion Rate',
-      value: `${funnel.conversionRate}%`,
-      trend: funnel.conversionRate > 10 ? '+Good' : 'Needs Improvement',
-      description: 'From add-to-cart to purchase completion'
-    });
-    
-    // User engagement insight
-    const uniqueUsers = new Set(this.userInteractions.map(i => i.userId)).size;
-    const avgInteractionsPerUser = this.userInteractions.length / uniqueUsers;
+    // Completion rate insight
+    const funnel = this.getViewingFunnel();
     
     insights.push({
       type: 'engagement',
-      title: 'User Engagement Score',
-      value: avgInteractionsPerUser.toFixed(1),
-      trend: avgInteractionsPerUser > 10 ? 'High' : 'Medium',
-      description: 'Average interactions per user session'
+      title: 'Completion Rate',
+      value: `${funnel.completionRate}%`,
+      trend: funnel.completionRate > 60 ? '+Good' : 'Needs Improvement',
+      description: 'Percentage of started content that gets completed'
+    });
+    
+    // User engagement insight
+    const uniqueUsers = new Set(this.viewingData.map(v => v.userId)).size;
+    const avgViewsPerUser = this.viewingData.length / uniqueUsers;
+    
+    insights.push({
+      type: 'users',
+      title: 'User Engagement',
+      value: avgViewsPerUser.toFixed(1),
+      trend: avgViewsPerUser > 15 ? 'High' : 'Medium',
+      description: 'Average viewing sessions per user'
     });
     
     return insights;

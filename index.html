@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Analytics Dashboard - AI-Powered Market Intelligence</title>
+    <title>Netflix Analytics Dashboard - Content Intelligence Platform</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-black min-h-screen text-white">
     <!-- Header -->
-    <header class="bg-white shadow-lg sticky top-0 z-50">
+    <header class="bg-gradient-to-r from-red-600 to-red-800 shadow-2xl sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-3 sm:py-4">
                 <div class="flex items-center space-x-2 sm:space-x-3">
-                    <i class="fas fa-chart-line text-2xl sm:text-3xl text-blue-600"></i>
+                    <i class="fas fa-play-circle text-2xl sm:text-3xl text-white"></i>
                     <div>
-                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Analytics Hub</h1>
-                        <p class="text-xs sm:text-sm text-gray-500">AI-Powered Market Intelligence</p>
+                        <h1 class="text-xl sm:text-2xl font-bold text-white">Netflix Analytics</h1>
+                        <p class="text-xs sm:text-sm text-red-100">Content Intelligence Platform</p>
                     </div>
                 </div>
                 
@@ -25,20 +25,20 @@
                     <button id="dashboard-tab" class="nav-tab active" data-tab="dashboard">
                         <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
                     </button>
-                    <button id="products-tab" class="nav-tab" data-tab="products">
-                        <i class="fas fa-box mr-2"></i>Products
+                    <button id="content-tab" class="nav-tab" data-tab="content">
+                        <i class="fas fa-film mr-2"></i>Content
                     </button>
                     <button id="analytics-tab" class="nav-tab" data-tab="analytics">
                         <i class="fas fa-chart-bar mr-2"></i>Analytics
                     </button>
                     <button id="insights-tab" class="nav-tab" data-tab="insights">
-                        <i class="fas fa-lightbulb mr-2"></i>Insights
+                        <i class="fas fa-brain mr-2"></i>AI Insights
                     </button>
                 </nav>
                 
                 <!-- Mobile Menu Button -->
-                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
-                    <i class="fas fa-bars text-gray-600"></i>
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-red-700">
+                    <i class="fas fa-bars text-white"></i>
                 </button>
             </div>
             
@@ -48,14 +48,14 @@
                     <button class="nav-tab mobile active" data-tab="dashboard">
                         <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
                     </button>
-                    <button class="nav-tab mobile" data-tab="products">
-                        <i class="fas fa-box mr-2"></i>Products
+                    <button class="nav-tab mobile" data-tab="content">
+                        <i class="fas fa-film mr-2"></i>Content
                     </button>
                     <button class="nav-tab mobile" data-tab="analytics">
                         <i class="fas fa-chart-bar mr-2"></i>Analytics
                     </button>
                     <button class="nav-tab mobile" data-tab="insights">
-                        <i class="fas fa-lightbulb mr-2"></i>Insights
+                        <i class="fas fa-brain mr-2"></i>AI Insights
                     </button>
                 </div>
             </div>
@@ -74,32 +74,32 @@
             
             <!-- Charts Row 1 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <canvas id="conversionChart"></canvas>
+                <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+                    <canvas id="viewingChart"></canvas>
                 </div>
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <canvas id="categoryChart"></canvas>
+                <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+                    <canvas id="genreChart"></canvas>
                 </div>
             </div>
             
             <!-- Charts Row 2 -->
             <div class="grid grid-cols-1 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <canvas id="revenueChart"></canvas>
+                <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+                    <canvas id="engagementChart"></canvas>
                 </div>
             </div>
             
             <!-- Insights Row -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div id="top-products"></div>
+                <div id="top-content"></div>
                 <div id="ai-insights"></div>
             </div>
         </div>
         
-        <!-- Products Tab -->
-        <div id="products-content" class="tab-content hidden">
+        <!-- Content Tab -->
+        <div id="content-content" class="tab-content hidden">
             <!-- Filter Controls -->
-            <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+            <div class="bg-gray-900 rounded-xl shadow-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-gray-800">
                 <div class="flex flex-col space-y-4">
                     <!-- Search Section -->
                     <div class="w-full">
@@ -107,8 +107,8 @@
                             <input 
                                 type="text" 
                                 id="search-input" 
-                                placeholder="Search products..." 
-                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-base"
+                                placeholder="Search movies and shows..." 
+                                class="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 text-base text-white placeholder-gray-400"
                             >
                             <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         </div>
@@ -117,43 +117,44 @@
                     <!-- Sort Section -->
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                         <div class="flex items-center space-x-3">
-                            <label for="sort-select" class="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by:</label>
-                            <select id="sort-select" class="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
-                                <option value="name">Name</option>
-                                <option value="price-low">Price: Low to High</option>
-                                <option value="price-high">Price: High to Low</option>
+                            <label for="sort-select" class="text-sm font-medium text-gray-300 whitespace-nowrap">Sort by:</label>
+                            <select id="sort-select" class="flex-1 sm:flex-none px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-base text-white">
+                                <option value="title">Title</option>
+                                <option value="rating-high">Rating: High to Low</option>
+                                <option value="rating-low">Rating: Low to High</option>
+                                <option value="year">Release Year</option>
                                 <option value="popularity">Popularity</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                <!-- Category Filters -->
+                <!-- Genre Filters -->
                 <div class="mt-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
-                    <div id="category-container" class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
-                        <!-- Categories will be populated by JavaScript -->
+                    <h3 class="text-lg font-semibold text-white mb-4">Genres</h3>
+                    <div id="genre-container" class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+                        <!-- Genres will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
 
             <!-- Results Info -->
             <div class="flex justify-between items-center mb-4 sm:mb-6">
-                <p id="results-count" class="text-gray-600 font-medium text-sm sm:text-base"></p>
+                <p id="results-count" class="text-gray-400 font-medium text-sm sm:text-base"></p>
                 <div id="loading-spinner" class="hidden">
-                    <i class="fas fa-spinner fa-spin text-blue-500 text-xl"></i>
+                    <i class="fas fa-spinner fa-spin text-red-500 text-xl"></i>
                 </div>
             </div>
 
-            <!-- Product Grid -->
-            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                <!-- Products will be populated by JavaScript -->
+            <!-- Content Grid -->
+            <div id="content-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                <!-- Content will be populated by JavaScript -->
             </div>
 
             <!-- No Results Message -->
             <div id="no-results" class="hidden text-center py-12">
-                <i class="fas fa-search text-4xl sm:text-6xl text-gray-300 mb-4"></i>
-                <h3 class="text-lg sm:text-xl font-semibold text-gray-600 mb-2">No products found</h3>
+                <i class="fas fa-search text-4xl sm:text-6xl text-gray-600 mb-4"></i>
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-400 mb-2">No content found</h3>
                 <p class="text-gray-500 text-sm sm:text-base">Try adjusting your search or filter criteria</p>
             </div>
         </div>
@@ -161,93 +162,93 @@
         <!-- Analytics Tab -->
         <div id="analytics-content" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <div id="price-optimization"></div>
-                <div id="market-basket"></div>
+                <div id="content-performance"></div>
+                <div id="audience-segments"></div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div id="user-segments"></div>
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Demand Forecasting</h3>
+                <div id="viewing-patterns"></div>
+                <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+                    <h3 class="text-lg font-semibold text-white mb-4">Content Recommendation Engine</h3>
                     <div class="space-y-4">
                         <div class="flex items-center space-x-4">
-                            <select id="forecast-product" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg">
-                                <option value="">Select a product...</option>
+                            <select id="recommendation-genre" class="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white">
+                                <option value="">Select a genre...</option>
                             </select>
-                            <button id="generate-forecast" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                Forecast
+                            <button id="generate-recommendations" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                Generate
                             </button>
                         </div>
-                        <div id="forecast-results" class="hidden p-4 bg-gray-50 rounded-lg">
-                            <!-- Forecast results will be displayed here -->
+                        <div id="recommendation-results" class="hidden p-4 bg-gray-800 rounded-lg">
+                            <!-- Recommendation results will be displayed here -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Insights Tab -->
+        <!-- AI Insights Tab -->
         <div id="insights-content" class="tab-content hidden">
             <div class="grid grid-cols-1 gap-6">
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                        <i class="fas fa-robot mr-2 text-blue-500"></i>
+                <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+                    <h3 class="text-lg font-semibold text-white mb-4">
+                        <i class="fas fa-robot mr-2 text-red-500"></i>
                         Machine Learning Insights
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-4">
-                            <h4 class="font-medium text-gray-900">Customer Behavior Patterns</h4>
-                            <ul class="space-y-2 text-sm text-gray-600">
+                            <h4 class="font-medium text-white">Viewer Behavior Patterns</h4>
+                            <ul class="space-y-2 text-sm text-gray-300">
                                 <li class="flex items-start space-x-2">
                                     <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-                                    <span>Users who view electronics are 3x more likely to purchase accessories</span>
+                                    <span>Binge-watching peaks on weekends with 40% longer sessions</span>
                                 </li>
                                 <li class="flex items-start space-x-2">
                                     <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-                                    <span>Mobile users prefer products under $100, desktop users show no price preference</span>
+                                    <span>Mobile viewing dominates during commute hours (7-9 AM, 5-7 PM)</span>
                                 </li>
                                 <li class="flex items-start space-x-2">
                                     <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-                                    <span>Cart abandonment peaks at $200+ items, suggesting price sensitivity threshold</span>
+                                    <span>Documentary completion rate is 85% higher on desktop vs mobile</span>
                                 </li>
                             </ul>
                         </div>
                         <div class="space-y-4">
-                            <h4 class="font-medium text-gray-900">Predictive Recommendations</h4>
-                            <ul class="space-y-2 text-sm text-gray-600">
+                            <h4 class="font-medium text-white">Content Strategy Recommendations</h4>
+                            <ul class="space-y-2 text-sm text-gray-300">
                                 <li class="flex items-start space-x-2">
                                     <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
-                                    <span>Increase electronics inventory by 25% for Q4 based on trend analysis</span>
+                                    <span>Increase thriller content by 30% based on engagement trends</span>
                                 </li>
                                 <li class="flex items-start space-x-2">
                                     <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
-                                    <span>Bundle clothing items with accessories for 15% revenue increase</span>
+                                    <span>International content shows 25% higher retention rates</span>
                                 </li>
                                 <li class="flex items-start space-x-2">
                                     <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
-                                    <span>Target high-value users with premium product recommendations</span>
+                                    <span>Limited series format outperforms traditional seasons by 18%</span>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
+                    <h3 class="text-lg font-semibold text-white mb-4">
                         <i class="fas fa-chart-line mr-2 text-green-500"></i>
                         Performance Metrics
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="text-center p-4 bg-blue-50 rounded-lg">
-                            <div class="text-2xl font-bold text-blue-600 mb-2">94.2%</div>
-                            <div class="text-sm text-gray-600">Model Accuracy</div>
+                        <div class="text-center p-4 bg-red-900 bg-opacity-30 rounded-lg border border-red-800">
+                            <div class="text-2xl font-bold text-red-400 mb-2">92.8%</div>
+                            <div class="text-sm text-gray-300">Recommendation Accuracy</div>
                         </div>
-                        <div class="text-center p-4 bg-green-50 rounded-lg">
-                            <div class="text-2xl font-bold text-green-600 mb-2">+18%</div>
-                            <div class="text-sm text-gray-600">Revenue Lift</div>
+                        <div class="text-center p-4 bg-green-900 bg-opacity-30 rounded-lg border border-green-800">
+                            <div class="text-2xl font-bold text-green-400 mb-2">+24%</div>
+                            <div class="text-sm text-gray-300">Engagement Increase</div>
                         </div>
-                        <div class="text-center p-4 bg-purple-50 rounded-lg">
-                            <div class="text-2xl font-bold text-purple-600 mb-2">2.3x</div>
-                            <div class="text-sm text-gray-600">ROI Improvement</div>
+                        <div class="text-center p-4 bg-purple-900 bg-opacity-30 rounded-lg border border-purple-800">
+                            <div class="text-2xl font-bold text-purple-400 mb-2">3.2x</div>
+                            <div class="text-sm text-gray-300">Content Discovery Rate</div>
                         </div>
                     </div>
                 </div>
@@ -256,16 +257,16 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-6 sm:py-8 mt-12 sm:mt-16">
+    <footer class="bg-gray-900 text-gray-400 py-6 sm:py-8 mt-12 sm:mt-16 border-t border-gray-800">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center">
-            <p class="text-sm sm:text-base">&copy; 2025 Analytics Hub. Powered by AI & Machine Learning</p>
+            <p class="text-sm sm:text-base">&copy; 2025 Netflix Analytics. Powered by AI & Machine Learning</p>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/auth.js"></script>
-    <script type="module" src="js/products.js"></script>
+    <script type="module" src="js/content.js"></script>
     <script type="module" src="js/analytics-engine.js"></script>
     <script type="module" src="js/dashboard.js"></script>
     <script type="module" src="js/app.js"></script>

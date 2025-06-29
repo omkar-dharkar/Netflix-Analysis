@@ -1,29 +1,36 @@
 import { authManager } from './auth.js';
-import { ProductManager, productCategories } from './products.js';
+import { ContentManager, contentGenres } from './content.js';
+import { NetflixDashboard } from './dashboard.js';
+import { NetflixAnalyticsEngine } from './analytics-engine.js';
 
-class ProductFilterApp {
+class NetflixAnalyticsApp {
   constructor() {
-    this.productManager = new ProductManager();
+    this.contentManager = new ContentManager();
+    this.dashboard = new NetflixDashboard();
+    this.analytics = new NetflixAnalyticsEngine();
     this.isLoading = false;
     this.debounceTimer = null;
+    this.currentTab = 'dashboard';
     
     this.initializeApp();
   }
 
   initializeApp() {
-    this.renderCategories();
+    this.renderGenres();
     this.setupEventListeners();
-    this.filterAndRenderProducts();
+    this.setupTabNavigation();
+    this.filterAndRenderContent();
+    this.setupAnalyticsFeatures();
   }
 
-  renderCategories() {
-    const categoryContainer = document.getElementById('category-container');
-    if (!categoryContainer) return;
+  renderGenres() {
+    const genreContainer = document.getElementById('genre-container');
+    if (!genreContainer) return;
 
-    categoryContainer.innerHTML = productCategories.map(category => `
-      <div class="category-btn ${category.id === 'all' ? 'active' : ''}" data-category="${category.id}">
-        <i class="${category.icon} mr-2"></i>
-        ${category.name}
+    genreContainer.innerHTML = contentGenres.map(genre => `
+      <div class="genre-btn ${genre.id === 'all' ? 'active' : ''}" data-genre="${genre.id}">
+        <i class="${genre.icon} mr-2"></i>
+        ${genre.name}
       </div>
     `).join('');
   }
@@ -41,47 +48,134 @@ class ProductFilterApp {
     const sortSelect = document.getElementById('sort-select');
     if (sortSelect) {
       sortSelect.addEventListener('change', (e) => {
-        this.filterAndRenderProducts();
+        this.filterAndRenderContent();
       });
     }
 
-    // Category buttons
-    const categoryContainer = document.getElementById('category-container');
-    if (categoryContainer) {
-      categoryContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('category-btn')) {
-          this.handleCategoryClick(e.target);
+    // Genre buttons
+    const genreContainer = document.getElementById('genre-container');
+    if (genreContainer) {
+      genreContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('genre-btn')) {
+          this.handleGenreClick(e.target);
         }
       });
+    }
+
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenuBtn && mobileMenu) {
+      mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+    }
+  }
+
+  setupTabNavigation() {
+    const tabButtons = document.querySelectorAll('.nav-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetTab = button.dataset.tab;
+        
+        // Remove active class from all tabs and contents
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.add('hidden'));
+        
+        // Add active class to clicked tab and show corresponding content
+        button.classList.add('active');
+        const targetContent = document.getElementById(`${targetTab}-content`);
+        if (targetContent) {
+          targetContent.classList.remove('hidden');
+        }
+        
+        this.currentTab = targetTab;
+        
+        // Hide mobile menu after selection
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenu) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+    });
+  }
+
+  setupAnalyticsFeatures() {
+    // Recommendation engine
+    const recommendationGenre = document.getElementById('recommendation-genre');
+    const generateRecommendations = document.getElementById('generate-recommendations');
+    
+    if (recommendationGenre) {
+      // Populate genre options
+      const genres = [...new Set(this.contentManager.allContent.map(c => c.genre))];
+      recommendationGenre.innerHTML = '<option value="">Select a genre...</option>' +
+        genres.map(genre => `<option value="${genre}">${genre.charAt(0).toUpperCase() + genre.slice(1)}</option>`).join('');
+    }
+    
+    if (generateRecommendations) {
+      generateRecommendations.addEventListener('click', () => {
+        const selectedGenre = recommendationGenre.value;
+        if (selectedGenre) {
+          this.generateRecommendations(selectedGenre);
+        }
+      });
+    }
+  }
+
+  generateRecommendations(genre) {
+    const recommendations = this.analytics.getContentRecommendations(genre);
+    const resultsContainer = document.getElementById('recommendation-results');
+    
+    if (resultsContainer) {
+      resultsContainer.classList.remove('hidden');
+      resultsContainer.innerHTML = `
+        <h4 class="font-medium text-white mb-3">Recommended ${genre.charAt(0).toUpperCase() + genre.slice(1)} Content</h4>
+        <div class="space-y-2">
+          ${recommendations.map(content => `
+            <div class="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+              <div>
+                <h5 class="font-medium text-white">${content.title}</h5>
+                <p class="text-sm text-gray-400">${content.reason} • Rating: ${content.rating}</p>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-medium text-green-400">${content.recommendationScore.toFixed(1)}</div>
+                <div class="text-xs text-gray-400">Score</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
     }
   }
 
   debounceSearch(searchTerm) {
     clearTimeout(this.debounceTimer);
     this.debounceTimer = setTimeout(() => {
-      this.filterAndRenderProducts();
+      this.filterAndRenderContent();
     }, 300);
   }
 
-  handleCategoryClick(categoryBtn) {
-    // Remove active class from all category buttons
-    document.querySelectorAll('.category-btn').forEach(btn => {
+  handleGenreClick(genreBtn) {
+    // Remove active class from all genre buttons
+    document.querySelectorAll('.genre-btn').forEach(btn => {
       btn.classList.remove('active');
     });
     
     // Add active class to clicked button
-    categoryBtn.classList.add('active');
+    genreBtn.classList.add('active');
     
     // Add bounce animation
-    categoryBtn.classList.add('bounce-subtle');
+    genreBtn.classList.add('bounce-subtle');
     setTimeout(() => {
-      categoryBtn.classList.remove('bounce-subtle');
+      genreBtn.classList.remove('bounce-subtle');
     }, 600);
     
-    this.filterAndRenderProducts();
+    this.filterAndRenderContent();
   }
 
-  filterAndRenderProducts() {
+  filterAndRenderContent() {
     if (this.isLoading) return;
     
     this.showLoading(true);
@@ -89,74 +183,87 @@ class ProductFilterApp {
     // Get current filter values
     const searchInput = document.getElementById('search-input');
     const sortSelect = document.getElementById('sort-select');
-    const activeCategory = document.querySelector('.category-btn.active');
+    const activeGenre = document.querySelector('.genre-btn.active');
     
     const searchTerm = searchInput ? searchInput.value : '';
-    const sortBy = sortSelect ? sortSelect.value : 'name';
-    const category = activeCategory ? activeCategory.dataset.category : 'all';
+    const sortBy = sortSelect ? sortSelect.value : 'title';
+    const genre = activeGenre ? activeGenre.dataset.genre : 'all';
     
-    // Filter products
-    const filteredProducts = this.productManager.filterProducts(searchTerm, category, sortBy);
+    // Filter content
+    const filteredContent = this.contentManager.filterContent(searchTerm, genre, sortBy);
     
     // Simulate loading delay for better UX
     setTimeout(() => {
-      this.renderProducts(filteredProducts, searchTerm);
+      this.renderContent(filteredContent, searchTerm);
       this.updateResultsCount();
       this.showLoading(false);
     }, 200);
   }
 
-  renderProducts(products, searchTerm = '') {
-    const productGrid = document.getElementById('product-grid');
+  renderContent(content, searchTerm = '') {
+    const contentGrid = document.getElementById('content-grid');
     const noResults = document.getElementById('no-results');
     
-    if (!productGrid || !noResults) return;
+    if (!contentGrid || !noResults) return;
 
-    if (products.length === 0) {
-      productGrid.classList.add('hidden');
+    if (content.length === 0) {
+      contentGrid.classList.add('hidden');
       noResults.classList.remove('hidden');
       return;
     }
 
-    productGrid.classList.remove('hidden');
+    contentGrid.classList.remove('hidden');
     noResults.classList.add('hidden');
 
-    productGrid.innerHTML = products.map((product, index) => {
-      const highlightedName = this.productManager.highlightSearchTerm(product.name, searchTerm);
-      const highlightedDescription = this.productManager.highlightSearchTerm(product.description, searchTerm);
+    contentGrid.innerHTML = content.map((item, index) => {
+      const highlightedTitle = this.contentManager.highlightSearchTerm(item.title, searchTerm);
+      const highlightedDescription = this.contentManager.highlightSearchTerm(item.description, searchTerm);
       
       return `
-        <div class="product-card glow-effect fade-in" style="animation-delay: ${index * 0.05}s">
-          <div class="product-image-container">
+        <div class="content-card glow-effect fade-in" style="animation-delay: ${index * 0.05}s">
+          <div class="content-image-container">
             <img 
-              src="${product.image}" 
-              alt="${product.name}"
-              class="product-image"
+              src="${item.image}" 
+              alt="${item.title}"
+              class="content-image"
               loading="lazy"
             >
-            <div class="popularity-badge">
-              <i class="fas fa-star text-yellow-500 mr-1"></i>
-              ${product.popularity}
+            <div class="rating-badge">
+              <i class="fas fa-star text-yellow-400 mr-1"></i>
+              ${item.rating}
+            </div>
+            <div class="type-badge">
+              ${item.type}
             </div>
           </div>
           
-          <div class="product-content">
-            <h3 class="product-title">
-              ${highlightedName}
+          <div class="content-info">
+            <h3 class="content-title">
+              ${highlightedTitle}
             </h3>
             
-            <p class="product-description">
+            <p class="content-description">
               ${highlightedDescription}
             </p>
             
-            <div class="product-footer">
-              <span class="price-tag">
-                $${product.price}
+            <div class="content-meta">
+              <span class="genre-tag">
+                ${item.genre.charAt(0).toUpperCase() + item.genre.slice(1)}
               </span>
+              <span class="year-tag">
+                ${item.year}
+              </span>
+            </div>
+            
+            <div class="content-footer">
+              <div class="popularity-score">
+                <i class="fas fa-fire text-red-500 mr-1"></i>
+                ${item.popularity}% popular
+              </div>
               
-              <button class="add-to-cart-btn">
-                <i class="fas fa-shopping-cart mr-2"></i>
-                Add to Cart
+              <button class="watch-btn">
+                <i class="fas fa-play mr-2"></i>
+                Watch Now
               </button>
             </div>
           </div>
@@ -169,10 +276,10 @@ class ProductFilterApp {
     const resultsCount = document.getElementById('results-count');
     if (!resultsCount) return;
 
-    const filteredCount = this.productManager.getProductCount();
-    const totalCount = this.productManager.getTotalProductCount();
+    const filteredCount = this.contentManager.getContentCount();
+    const totalCount = this.contentManager.getTotalContentCount();
     
-    resultsCount.textContent = `Showing ${filteredCount} of ${totalCount} products`;
+    resultsCount.textContent = `Showing ${filteredCount} of ${totalCount} titles`;
   }
 
   showLoading(show) {
@@ -191,17 +298,5 @@ class ProductFilterApp {
 
 // Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  new ProductFilterApp();
+  new NetflixAnalyticsApp();
 });
-
-// Add some utility CSS classes for line clamping
-const style = document.createElement('style');
-style.textContent = `
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-`;
-document.head.appendChild(style);
