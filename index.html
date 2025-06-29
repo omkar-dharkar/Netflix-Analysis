@@ -1,52 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Filter Product</title>
-    <link rel="stylesheet" href="styles.css" rel="stylesheet" />
-  </head>
-  <body>
-    <div class="filter-container">
-      <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search..." />
-        <button id="search-btn">Search</button>
-      </div>
-      <div class="category-container">
-        <div class="category-btn" data-category="all">All Product</div>
-        <div class="category-btn" data-category="electronics">Electronics</div>
-        <div class="category-btn" data-category="clothing">Clothing</div>
-        <div class="category-btn" data-category="home">Home & Garden</div>
-      </div>
-    </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Filter App - Mark V</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-store text-3xl text-blue-600"></i>
+                    <h1 class="text-2xl font-bold text-gray-900">ProductHub</h1>
+                </div>
+                
+                <!-- Auth Section -->
+                <div id="auth-section" class="flex items-center space-x-4">
+                    <!-- Login buttons (shown when not authenticated) -->
+                    <div id="login-buttons" class="flex space-x-3">
+                        <button id="google-login" class="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                            <i class="fab fa-google"></i>
+                            <span>Sign in with Google</span>
+                        </button>
+                        <button id="facebook-login" class="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                            <i class="fab fa-facebook-f"></i>
+                            <span>Sign in with Facebook</span>
+                        </button>
+                    </div>
+                    
+                    <!-- User info (shown when authenticated) -->
+                    <div id="user-info" class="hidden flex items-center space-x-4">
+                        <div class="flex items-center space-x-3">
+                            <img id="user-avatar" src="" alt="User Avatar" class="w-10 h-10 rounded-full border-2 border-blue-500">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Welcome,</p>
+                                <p id="user-name" class="text-sm text-blue-600 font-semibold"></p>
+                            </div>
+                        </div>
+                        <button id="logout-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
-    <div id="product-list">
-      <!-- Card 1 -->
-      <div class="product-item" data-category="electronics">
-        <h3>Smartphone</h3>
-        <p>Description of smartphone product.</p>
-      </div>
-      <!-- Card 2 -->
-      <div class="product-item" data-category="clothing">
-        <h3>T-Shirt</h3>
-        <p>Description of T-Shirt Product.</p>
-      </div>
-      <!-- Card 3 -->
-      <div class="product-item" data-category="Home">
-        <h3>Coffee Maker</h3>
-        <p>Description of Coffee Maker Product.</p>
-      </div>
-      <!-- Card 4 -->
-      <div class="product-item" data-category="Electronics">
-        <h3>Laptop</h3>
-        <p>Description of laptop Product.</p>
-      </div>
-      <!-- Card 5 -->
-      <div class="product-item" data-category="clothing">
-        <h3>Hoodie</h3>
-        <p>Description of Hoodie Product.</p>
-      </div>
-    </div>
-    <script src="script.js"></script>
-  </body>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Filter Controls -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                <!-- Search Section -->
+                <div class="flex-1 max-w-md">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="search-input" 
+                            placeholder="Search products..." 
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        >
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Sort Section -->
+                <div class="flex items-center space-x-4">
+                    <label for="sort-select" class="text-sm font-medium text-gray-700">Sort by:</label>
+                    <select id="sort-select" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="name">Name</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="popularity">Popularity</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Category Filters -->
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
+                <div id="category-container" class="flex flex-wrap gap-3">
+                    <!-- Categories will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Info -->
+        <div class="flex justify-between items-center mb-6">
+            <p id="results-count" class="text-gray-600 font-medium"></p>
+            <div id="loading-spinner" class="hidden">
+                <i class="fas fa-spinner fa-spin text-blue-500 text-xl"></i>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Products will be populated by JavaScript -->
+        </div>
+
+        <!-- No Results Message -->
+        <div id="no-results" class="hidden text-center py-12">
+            <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
+            <p class="text-gray-500">Try adjusting your search or filter criteria</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2025 ProductHub. Built with ❤️ using Vanilla JS & Firebase</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/products.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
 </html>
