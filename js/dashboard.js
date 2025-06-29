@@ -11,29 +11,38 @@ export class NetflixDashboard {
   }
 
   initializeDashboard() {
-    // Check if dashboard elements are available
+    if (this.isInitialized) return;
+    
+    // Check if dashboard elements are available and visible
     if (!this.checkDashboardElements()) {
-      console.warn('Dashboard elements not ready, retrying...');
-      setTimeout(() => this.initializeDashboard(), 100);
-      return;
-    }
-
-    if (this.isInitialized) {
+      console.warn('Dashboard elements not ready');
       return;
     }
 
     this.isInitialized = true;
     
     try {
+      // Initialize components in order of importance
       this.renderOverviewCards();
-      this.renderViewingFunnel();
-      this.renderGenrePerformance();
-      this.renderEngagementChart();
-      this.renderTopContent();
-      this.renderContentPerformance();
-      this.renderAudienceSegmentation();
-      this.renderViewingPatterns();
-      this.renderInsights();
+      
+      // Use setTimeout to prevent blocking the main thread
+      setTimeout(() => {
+        this.renderViewingFunnel();
+        this.renderGenrePerformance();
+      }, 50);
+      
+      setTimeout(() => {
+        this.renderEngagementChart();
+        this.renderTopContent();
+      }, 100);
+      
+      setTimeout(() => {
+        this.renderContentPerformance();
+        this.renderAudienceSegmentation();
+        this.renderViewingPatterns();
+        this.renderInsights();
+      }, 150);
+      
     } catch (error) {
       console.error('Error initializing dashboard:', error);
       this.isInitialized = false;
@@ -45,14 +54,12 @@ export class NetflixDashboard {
       'overview-cards',
       'viewingChart',
       'genreChart',
-      'engagementChart',
-      'top-content',
-      'ai-insights'
+      'engagementChart'
     ];
 
     return requiredElements.every(id => {
       const element = document.getElementById(id);
-      return element && element.offsetParent !== null; // Check if element is visible
+      return element && element.offsetParent !== null;
     });
   }
 
@@ -60,12 +67,9 @@ export class NetflixDashboard {
     const insights = this.analytics.generateInsights();
     const container = document.getElementById('overview-cards');
     
-    if (!container) {
-      console.warn('Overview cards container not found');
-      return;
-    }
+    if (!container) return;
     
-    container.innerHTML = insights.map(insight => `
+    const cardsHTML = insights.map(insight => `
       <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800 hover:border-red-600 transition-all duration-300">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wide">${insight.title}</h3>
@@ -82,6 +86,8 @@ export class NetflixDashboard {
         </div>
       </div>
     `).join('');
+    
+    container.innerHTML = cardsHTML;
   }
 
   getIcon(type) {
@@ -108,12 +114,9 @@ export class NetflixDashboard {
     const funnel = this.analytics.getViewingFunnel();
     const ctx = document.getElementById('viewingChart');
     
-    if (!ctx) {
-      console.warn('Viewing chart canvas not found');
-      return;
-    }
+    if (!ctx) return;
     
-    // Destroy existing chart if it exists
+    // Destroy existing chart
     if (this.charts.viewing) {
       this.charts.viewing.destroy();
     }
@@ -143,6 +146,9 @@ export class NetflixDashboard {
       },
       options: {
         responsive: true,
+        animation: {
+          duration: 1000
+        },
         plugins: {
           title: {
             display: true,
@@ -180,12 +186,9 @@ export class NetflixDashboard {
     const genreData = this.analytics.getGenrePerformance();
     const ctx = document.getElementById('genreChart');
     
-    if (!ctx) {
-      console.warn('Genre chart canvas not found');
-      return;
-    }
+    if (!ctx) return;
     
-    // Destroy existing chart if it exists
+    // Destroy existing chart
     if (this.charts.genre) {
       this.charts.genre.destroy();
     }
@@ -207,6 +210,9 @@ export class NetflixDashboard {
       },
       options: {
         responsive: true,
+        animation: {
+          duration: 1000
+        },
         plugins: {
           title: {
             display: true,
@@ -231,12 +237,9 @@ export class NetflixDashboard {
       .map(([hour, count]) => ({ hour: parseInt(hour), count }));
     
     const ctx = document.getElementById('engagementChart');
-    if (!ctx) {
-      console.warn('Engagement chart canvas not found');
-      return;
-    }
+    if (!ctx) return;
     
-    // Destroy existing chart if it exists
+    // Destroy existing chart
     if (this.charts.engagement) {
       this.charts.engagement.destroy();
     }
@@ -261,6 +264,9 @@ export class NetflixDashboard {
       },
       options: {
         responsive: true,
+        animation: {
+          duration: 1000
+        },
         plugins: {
           title: {
             display: true,
@@ -300,32 +306,31 @@ export class NetflixDashboard {
     const topContent = this.analytics.getTopPerformingContent(5);
     const container = document.getElementById('top-content');
     
-    if (!container) {
-      console.warn('Top content container not found');
-      return;
-    }
+    if (!container) return;
+    
+    const contentHTML = topContent.map((content, index) => `
+      <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
+        <div class="flex items-center space-x-4">
+          <div class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold">
+            ${index + 1}
+          </div>
+          <div>
+            <h4 class="font-medium text-white">${content.title}</h4>
+            <p class="text-sm text-gray-400">${content.type} • ${content.genre}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="font-semibold text-white">${content.totalViews.toLocaleString()} views</p>
+          <p class="text-sm text-gray-400">${content.completionRate}% completion</p>
+        </div>
+      </div>
+    `).join('');
     
     container.innerHTML = `
       <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
         <h3 class="text-lg font-semibold text-white mb-4">Top Performing Content</h3>
         <div class="space-y-4">
-          ${topContent.map((content, index) => `
-            <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
-              <div class="flex items-center space-x-4">
-                <div class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold">
-                  ${index + 1}
-                </div>
-                <div>
-                  <h4 class="font-medium text-white">${content.title}</h4>
-                  <p class="text-sm text-gray-400">${content.type} • ${content.genre}</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="font-semibold text-white">${content.totalViews.toLocaleString()} views</p>
-                <p class="text-sm text-gray-400">${content.completionRate}% completion</p>
-              </div>
-            </div>
-          `).join('')}
+          ${contentHTML}
         </div>
       </div>
     `;
@@ -337,30 +342,32 @@ export class NetflixDashboard {
     
     if (!container) return;
     
+    const performanceHTML = genrePerf.map(genre => `
+      <div class="border border-gray-700 rounded-lg p-4">
+        <div class="flex items-start justify-between mb-2">
+          <h4 class="font-medium text-white capitalize">${genre.genre}</h4>
+          <span class="px-2 py-1 text-xs font-medium bg-red-900 bg-opacity-50 text-red-300 rounded-full">
+            ${genre.engagementScore} score
+          </span>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-xs text-gray-400">
+          <div>
+            <span class="block">Watch Time: ${Math.round(genre.totalWatchTime / 60)}h</span>
+            <span class="block">Avg Rating: ${genre.avgRating}</span>
+          </div>
+          <div>
+            <span class="block">Content: ${genre.contentCount} titles</span>
+            <span class="block">Views: ${genre.viewCount.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    
     container.innerHTML = `
       <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
         <h3 class="text-lg font-semibold text-white mb-4">Genre Performance Analysis</h3>
         <div class="space-y-4">
-          ${genrePerf.map(genre => `
-            <div class="border border-gray-700 rounded-lg p-4">
-              <div class="flex items-start justify-between mb-2">
-                <h4 class="font-medium text-white capitalize">${genre.genre}</h4>
-                <span class="px-2 py-1 text-xs font-medium bg-red-900 bg-opacity-50 text-red-300 rounded-full">
-                  ${genre.engagementScore} score
-                </span>
-              </div>
-              <div class="grid grid-cols-2 gap-4 text-xs text-gray-400">
-                <div>
-                  <span class="block">Watch Time: ${Math.round(genre.totalWatchTime / 60)}h</span>
-                  <span class="block">Avg Rating: ${genre.avgRating}</span>
-                </div>
-                <div>
-                  <span class="block">Content: ${genre.contentCount} titles</span>
-                  <span class="block">Views: ${genre.viewCount.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          `).join('')}
+          ${performanceHTML}
         </div>
       </div>
     `;
@@ -379,19 +386,21 @@ export class NetflixDashboard {
       { name: 'New Users', count: segments.newUsers.length, color: 'bg-green-600', description: '<7 days' }
     ];
     
+    const segmentHTML = segmentData.map(segment => `
+      <div class="text-center p-4 bg-gray-800 rounded-lg border border-gray-700">
+        <div class="w-12 h-12 ${segment.color} rounded-full mx-auto mb-2 flex items-center justify-center">
+          <span class="text-white font-bold text-lg">${segment.count}</span>
+        </div>
+        <h4 class="font-medium text-white text-sm">${segment.name}</h4>
+        <p class="text-xs text-gray-400">${segment.description}</p>
+      </div>
+    `).join('');
+    
     container.innerHTML = `
       <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
         <h3 class="text-lg font-semibold text-white mb-4">Audience Segmentation</h3>
         <div class="grid grid-cols-2 gap-4">
-          ${segmentData.map(segment => `
-            <div class="text-center p-4 bg-gray-800 rounded-lg border border-gray-700">
-              <div class="w-12 h-12 ${segment.color} rounded-full mx-auto mb-2 flex items-center justify-center">
-                <span class="text-white font-bold text-lg">${segment.count}</span>
-              </div>
-              <h4 class="font-medium text-white text-sm">${segment.name}</h4>
-              <p class="text-xs text-gray-400">${segment.description}</p>
-            </div>
-          `).join('')}
+          ${segmentHTML}
         </div>
       </div>
     `;
@@ -404,27 +413,29 @@ export class NetflixDashboard {
     
     if (!container) return;
     
+    const deviceHTML = deviceData.map(([device, count]) => {
+      const percentage = (count / deviceData.reduce((sum, [,c]) => sum + c, 0) * 100).toFixed(1);
+      return `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-${this.getDeviceIcon(device)} text-gray-400"></i>
+            <span class="text-white capitalize">${device.replace('_', ' ')}</span>
+          </div>
+          <div class="flex items-center space-x-3">
+            <div class="w-24 bg-gray-700 rounded-full h-2">
+              <div class="bg-red-600 h-2 rounded-full" style="width: ${percentage}%"></div>
+            </div>
+            <span class="text-gray-400 text-sm w-12">${percentage}%</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
     container.innerHTML = `
       <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
         <h3 class="text-lg font-semibold text-white mb-4">Device Usage Patterns</h3>
         <div class="space-y-3">
-          ${deviceData.map(([device, count]) => {
-            const percentage = (count / deviceData.reduce((sum, [,c]) => sum + c, 0) * 100).toFixed(1);
-            return `
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <i class="fas fa-${this.getDeviceIcon(device)} text-gray-400"></i>
-                  <span class="text-white capitalize">${device.replace('_', ' ')}</span>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <div class="w-24 bg-gray-700 rounded-full h-2">
-                    <div class="bg-red-600 h-2 rounded-full" style="width: ${percentage}%"></div>
-                  </div>
-                  <span class="text-gray-400 text-sm w-12">${percentage}%</span>
-                </div>
-              </div>
-            `;
-          }).join('')}
+          ${deviceHTML}
         </div>
       </div>
     `;
@@ -442,10 +453,7 @@ export class NetflixDashboard {
 
   renderInsights() {
     const container = document.getElementById('ai-insights');
-    if (!container) {
-      console.warn('AI insights container not found');
-      return;
-    }
+    if (!container) return;
     
     const insights = [
       {
@@ -474,6 +482,21 @@ export class NetflixDashboard {
       }
     ];
     
+    const insightsHTML = insights.map(insight => `
+      <div class="border-l-4 border-red-600 pl-4 py-2">
+        <h4 class="font-medium text-white mb-1">${insight.title}</h4>
+        <p class="text-sm text-gray-400 mb-2">${insight.description}</p>
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-red-400">${insight.action}</p>
+          <span class="px-2 py-1 text-xs font-medium rounded-full ${
+            insight.impact === 'High' ? 'bg-red-900 bg-opacity-50 text-red-300' : 'bg-yellow-900 bg-opacity-50 text-yellow-300'
+          }">
+            ${insight.impact} Impact
+          </span>
+        </div>
+      </div>
+    `).join('');
+    
     container.innerHTML = `
       <div class="bg-gray-900 rounded-xl shadow-2xl p-6 border border-gray-800">
         <h3 class="text-lg font-semibold text-white mb-4">
@@ -481,20 +504,7 @@ export class NetflixDashboard {
           AI-Powered Insights
         </h3>
         <div class="space-y-4">
-          ${insights.map(insight => `
-            <div class="border-l-4 border-red-600 pl-4 py-2">
-              <h4 class="font-medium text-white mb-1">${insight.title}</h4>
-              <p class="text-sm text-gray-400 mb-2">${insight.description}</p>
-              <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-red-400">${insight.action}</p>
-                <span class="px-2 py-1 text-xs font-medium rounded-full ${
-                  insight.impact === 'High' ? 'bg-red-900 bg-opacity-50 text-red-300' : 'bg-yellow-900 bg-opacity-50 text-yellow-300'
-                }">
-                  ${insight.impact} Impact
-                </span>
-              </div>
-            </div>
-          `).join('')}
+          ${insightsHTML}
         </div>
       </div>
     `;

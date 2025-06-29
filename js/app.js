@@ -11,6 +11,8 @@ class NetflixAnalyticsApp {
     this.isLoading = false;
     this.debounceTimer = null;
     this.currentTab = 'dashboard';
+    this.dashboardInitialized = false;
+    this.lastRenderTime = 0;
     
     this.initializeApp();
   }
@@ -22,33 +24,46 @@ class NetflixAnalyticsApp {
     this.filterAndRenderContent();
     this.setupAnalyticsFeatures();
     
-    // Initialize dashboard after a short delay to ensure DOM is ready
+    // Initialize dashboard with a small delay to ensure DOM is ready
     setTimeout(() => {
-      this.initializeDashboard();
+      if (this.currentTab === 'dashboard') {
+        this.initializeDashboard();
+      }
     }, 100);
   }
 
   initializeDashboard() {
-    // Only initialize dashboard if we're on the dashboard tab and it hasn't been initialized
-    if (this.currentTab === 'dashboard' && !this.dashboard) {
+    if (this.dashboardInitialized || !this.isDashboardVisible()) return;
+    
+    try {
       this.dashboard = new NetflixDashboard();
+      this.dashboardInitialized = true;
+    } catch (error) {
+      console.error('Dashboard initialization failed:', error);
     }
+  }
+
+  isDashboardVisible() {
+    const dashboardContent = document.getElementById('dashboard-content');
+    return dashboardContent && !dashboardContent.classList.contains('hidden');
   }
 
   renderGenres() {
     const genreContainer = document.getElementById('genre-container');
     if (!genreContainer) return;
 
-    genreContainer.innerHTML = contentGenres.map(genre => `
+    const genreHTML = contentGenres.map(genre => `
       <div class="genre-btn ${genre.id === 'all' ? 'active' : ''}" data-genre="${genre.id}">
         <i class="${genre.icon} mr-2"></i>
         ${genre.name}
       </div>
     `).join('');
+    
+    genreContainer.innerHTML = genreHTML;
   }
 
   setupEventListeners() {
-    // Search input
+    // Search input with optimized debouncing
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
@@ -59,17 +74,18 @@ class NetflixAnalyticsApp {
     // Sort select
     const sortSelect = document.getElementById('sort-select');
     if (sortSelect) {
-      sortSelect.addEventListener('change', (e) => {
+      sortSelect.addEventListener('change', () => {
         this.filterAndRenderContent();
       });
     }
 
-    // Genre buttons
+    // Genre buttons with event delegation
     const genreContainer = document.getElementById('genre-container');
     if (genreContainer) {
       genreContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('genre-btn')) {
-          this.handleGenreClick(e.target);
+        const genreBtn = e.target.closest('.genre-btn');
+        if (genreBtn) {
+          this.handleGenreClick(genreBtn);
         }
       });
     }
@@ -92,28 +108,18 @@ class NetflixAnalyticsApp {
       button.addEventListener('click', () => {
         const targetTab = button.dataset.tab;
         
-        // Remove active class from all tabs and contents
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        tabContents.forEach(content => content.classList.add('hidden'));
+        // Prevent unnecessary re-renders
+        if (this.currentTab === targetTab) return;
         
-        // Add active class to clicked tab and show corresponding content
-        button.classList.add('active');
-        const targetContent = document.getElementById(`${targetTab}-content`);
-        if (targetContent) {
-          targetContent.classList.remove('hidden');
+        // Update tab states
+        this.switchTab(targetTab, tabButtons, tabContents);
+        
+        // Initialize dashboard only when needed
+        if (targetTab === 'dashboard' && !this.dashboardInitialized) {
+          setTimeout(() => this.initializeDashboard(), 50);
         }
         
-        this.currentTab = targetTab;
-        
-        // Initialize dashboard when switching to dashboard tab
-        if (targetTab === 'dashboard' && !this.dashboard) {
-          // Small delay to ensure the content is visible
-          setTimeout(() => {
-            this.initializeDashboard();
-          }, 50);
-        }
-        
-        // Hide mobile menu after selection
+        // Hide mobile menu
         const mobileMenu = document.getElementById('mobile-menu');
         if (mobileMenu) {
           mobileMenu.classList.add('hidden');
@@ -122,21 +128,43 @@ class NetflixAnalyticsApp {
     });
   }
 
+  switchTab(targetTab, tabButtons, tabContents) {
+    // Remove active states
+    tabButtons.forEach(btn => btn.classList.remove('active'));
+    tabContents.forEach(content => {
+      content.classList.add('hidden');
+      content.classList.remove('active');
+    });
+    
+    // Set active states
+    const activeButton = document.querySelector(`[data-tab="${targetTab}"]`);
+    const targetContent = document.getElementById(`${targetTab}-content`);
+    
+    if (activeButton) activeButton.classList.add('active');
+    if (targetContent) {
+      targetContent.classList.remove('hidden');
+      targetContent.classList.add('active');
+    }
+    
+    this.currentTab = targetTab;
+  }
+
   setupAnalyticsFeatures() {
-    // Recommendation engine
     const recommendationGenre = document.getElementById('recommendation-genre');
     const generateRecommendations = document.getElementById('generate-recommendations');
     
     if (recommendationGenre) {
-      // Populate genre options
       const genres = [...new Set(this.contentManager.allContent.map(c => c.genre))];
-      recommendationGenre.innerHTML = '<option value="">Select a genre...</option>' +
-        genres.map(genre => `<option value="${genre}">${genre.charAt(0).toUpperCase() + genre.slice(1)}</option>`).join('');
+      const options = ['<option value="">Select a genre...</option>'];
+      genres.forEach(genre => {
+        options.push(`<option value="${genre}">${genre.charAt(0).toUpperCase() + genre.slice(1)}</option>`);
+      });
+      recommendationGenre.innerHTML = options.join('');
     }
     
     if (generateRecommendations) {
       generateRecommendations.addEventListener('click', () => {
-        const selectedGenre = recommendationGenre.value;
+        const selectedGenre = recommendationGenre?.value;
         if (selectedGenre) {
           this.generateRecommendations(selectedGenre);
         }
@@ -148,26 +176,27 @@ class NetflixAnalyticsApp {
     const recommendations = this.analytics.getContentRecommendations(genre);
     const resultsContainer = document.getElementById('recommendation-results');
     
-    if (resultsContainer) {
-      resultsContainer.classList.remove('hidden');
-      resultsContainer.innerHTML = `
-        <h4 class="font-medium text-white mb-3">Recommended ${genre.charAt(0).toUpperCase() + genre.slice(1)} Content</h4>
-        <div class="space-y-2">
-          ${recommendations.map(content => `
-            <div class="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-              <div>
-                <h5 class="font-medium text-white">${content.title}</h5>
-                <p class="text-sm text-gray-400">${content.reason} • Rating: ${content.rating}</p>
-              </div>
-              <div class="text-right">
-                <div class="text-sm font-medium text-green-400">${content.recommendationScore.toFixed(1)}</div>
-                <div class="text-xs text-gray-400">Score</div>
-              </div>
-            </div>
-          `).join('')}
+    if (!resultsContainer) return;
+    
+    resultsContainer.classList.remove('hidden');
+    
+    const recommendationHTML = recommendations.map(content => `
+      <div class="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+        <div>
+          <h5 class="font-medium text-white">${content.title}</h5>
+          <p class="text-sm text-gray-400">${content.reason} • Rating: ${content.rating}</p>
         </div>
-      `;
-    }
+        <div class="text-right">
+          <div class="text-sm font-medium text-green-400">${content.recommendationScore.toFixed(1)}</div>
+          <div class="text-xs text-gray-400">Score</div>
+        </div>
+      </div>
+    `).join('');
+    
+    resultsContainer.innerHTML = `
+      <h4 class="font-medium text-white mb-3">Recommended ${genre.charAt(0).toUpperCase() + genre.slice(1)} Content</h4>
+      <div class="space-y-2">${recommendationHTML}</div>
+    `;
   }
 
   debounceSearch(searchTerm) {
@@ -178,46 +207,44 @@ class NetflixAnalyticsApp {
   }
 
   handleGenreClick(genreBtn) {
-    // Remove active class from all genre buttons
-    document.querySelectorAll('.genre-btn').forEach(btn => {
-      btn.classList.remove('active');
-    });
+    // Quick state update
+    const activeBtn = document.querySelector('.genre-btn.active');
+    if (activeBtn && activeBtn !== genreBtn) {
+      activeBtn.classList.remove('active');
+    }
     
-    // Add active class to clicked button
     genreBtn.classList.add('active');
-    
-    // Add bounce animation
-    genreBtn.classList.add('bounce-subtle');
-    setTimeout(() => {
-      genreBtn.classList.remove('bounce-subtle');
-    }, 600);
-    
     this.filterAndRenderContent();
   }
 
   filterAndRenderContent() {
     if (this.isLoading) return;
     
+    // Throttle rendering to prevent excessive calls
+    const now = Date.now();
+    if (now - this.lastRenderTime < 100) return;
+    this.lastRenderTime = now;
+    
     this.showLoading(true);
     
-    // Get current filter values
+    // Get filter values
     const searchInput = document.getElementById('search-input');
     const sortSelect = document.getElementById('sort-select');
     const activeGenre = document.querySelector('.genre-btn.active');
     
-    const searchTerm = searchInput ? searchInput.value : '';
-    const sortBy = sortSelect ? sortSelect.value : 'title';
-    const genre = activeGenre ? activeGenre.dataset.genre : 'all';
+    const searchTerm = searchInput?.value || '';
+    const sortBy = sortSelect?.value || 'title';
+    const genre = activeGenre?.dataset.genre || 'all';
     
-    // Filter content
+    // Filter and render
     const filteredContent = this.contentManager.filterContent(searchTerm, genre, sortBy);
     
-    // Simulate loading delay for better UX
+    // Use setTimeout to prevent blocking
     setTimeout(() => {
       this.renderContent(filteredContent, searchTerm);
       this.updateResultsCount();
       this.showLoading(false);
-    }, 200);
+    }, 0);
   }
 
   renderContent(content, searchTerm = '') {
@@ -227,20 +254,21 @@ class NetflixAnalyticsApp {
     if (!contentGrid || !noResults) return;
 
     if (content.length === 0) {
-      contentGrid.classList.add('hidden');
-      noResults.classList.remove('hidden');
+      contentGrid.style.display = 'none';
+      noResults.style.display = 'block';
       return;
     }
 
-    contentGrid.classList.remove('hidden');
-    noResults.classList.add('hidden');
+    noResults.style.display = 'none';
+    contentGrid.style.display = 'grid';
 
-    contentGrid.innerHTML = content.map((item, index) => {
+    // Batch render for better performance
+    const contentHTML = content.map((item, index) => {
       const highlightedTitle = this.contentManager.highlightSearchTerm(item.title, searchTerm);
       const highlightedDescription = this.contentManager.highlightSearchTerm(item.description, searchTerm);
       
       return `
-        <div class="content-card glow-effect fade-in" style="animation-delay: ${index * 0.05}s">
+        <div class="content-card" style="animation-delay: ${Math.min(index * 0.01, 0.5)}s">
           <div class="content-image-container">
             <img 
               src="${item.image}" 
@@ -290,6 +318,8 @@ class NetflixAnalyticsApp {
         </div>
       `;
     }).join('');
+    
+    contentGrid.innerHTML = contentHTML;
   }
 
   updateResultsCount() {
@@ -307,11 +337,7 @@ class NetflixAnalyticsApp {
     const loadingSpinner = document.getElementById('loading-spinner');
     
     if (loadingSpinner) {
-      if (show) {
-        loadingSpinner.classList.remove('hidden');
-      } else {
-        loadingSpinner.classList.add('hidden');
-      }
+      loadingSpinner.style.display = show ? 'block' : 'none';
     }
   }
 }
