@@ -5,7 +5,7 @@
 /* Custom component styles */
 @layer components {
   .category-btn {
-    @apply px-4 py-2 bg-gray-100 hover:bg-blue-100 text-gray-700 hover:text-blue-700 rounded-lg transition-all duration-200 cursor-pointer select-none font-medium border border-transparent hover:border-blue-200;
+    @apply px-3 py-2 sm:px-4 sm:py-2 bg-gray-100 hover:bg-blue-100 text-gray-700 hover:text-blue-700 rounded-lg transition-all duration-200 cursor-pointer select-none font-medium border border-transparent hover:border-blue-200 text-sm sm:text-base min-h-[44px] flex items-center justify-center touch-manipulation;
   }
   
   .category-btn.active {
@@ -17,7 +17,7 @@
   }
   
   .price-tag {
-    @apply text-2xl font-bold text-green-600;
+    @apply text-xl sm:text-2xl font-bold text-green-600;
   }
   
   .popularity-badge {
@@ -26,6 +26,14 @@
   
   .highlight {
     @apply bg-yellow-200 font-semibold;
+  }
+}
+
+/* Touch targets for mobile */
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -81,10 +89,25 @@
   overflow: hidden;
 }
 
-/* Responsive grid improvements */
+/* Mobile-specific improvements */
 @media (max-width: 640px) {
   .product-card {
-    @apply mx-2;
+    @apply mx-0;
+  }
+  
+  /* Ensure buttons are large enough for touch */
+  button {
+    min-height: 44px;
+  }
+  
+  /* Better spacing on mobile */
+  .category-btn {
+    @apply text-center;
+  }
+  
+  /* Improve readability on small screens */
+  body {
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 }
 
@@ -114,6 +137,15 @@ select:focus {
   @apply outline-none ring-2 ring-blue-500 ring-offset-2;
 }
 
+/* Better focus for mobile */
+@media (max-width: 640px) {
+  button:focus,
+  input:focus,
+  select:focus {
+    @apply ring-1 ring-offset-1;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -129,4 +161,41 @@ select:focus {
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-500;
+}
+
+/* Prevent text selection on buttons */
+button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Improve tap targets */
+.category-btn,
+button {
+  position: relative;
+}
+
+.category-btn::after,
+button::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  z-index: -1;
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  input {
+    font-size: 16px; /* Prevents zoom on focus */
+  }
+  
+  button {
+    -webkit-appearance: none;
+    border-radius: 8px;
+  }
 }
