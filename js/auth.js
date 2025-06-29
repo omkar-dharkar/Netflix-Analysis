@@ -1,6 +1,7 @@
 import { auth } from './firebase-config.js';
 import { 
-  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult,
   GoogleAuthProvider, 
   FacebookAuthProvider, 
   signOut,
@@ -16,6 +17,9 @@ class AuthManager {
   }
 
   initializeAuth() {
+    // Handle redirect result when page loads
+    this.handleRedirectResult();
+
     // Listen for auth state changes
     onAuthStateChanged(auth, (user) => {
       this.currentUser = user;
@@ -24,6 +28,18 @@ class AuthManager {
 
     // Set up event listeners
     this.setupEventListeners();
+  }
+
+  async handleRedirectResult() {
+    try {
+      const result = await getRedirectResult(auth);
+      if (result) {
+        console.log('Redirect sign-in successful:', result.user);
+      }
+    } catch (error) {
+      console.error('Redirect sign-in error:', error);
+      this.showAuthError('Authentication failed. Please try again.');
+    }
   }
 
   setupEventListeners() {
@@ -46,31 +62,19 @@ class AuthManager {
 
   async signInWithGoogle() {
     try {
-      const result = await signInWithPopup(auth, this.googleProvider);
-      console.log('Google sign-in successful:', result.user);
+      await signInWithRedirect(auth, this.googleProvider);
     } catch (error) {
       console.error('Google sign-in error:', error);
-      
-      if (error.code === 'auth/popup-blocked') {
-        this.showAuthError('Your browser blocked the sign-in popup. Please allow popups for this site and try again.');
-      } else {
-        this.showAuthError('Failed to sign in with Google. Please try again.');
-      }
+      this.showAuthError('Failed to sign in with Google. Please try again.');
     }
   }
 
   async signInWithFacebook() {
     try {
-      const result = await signInWithPopup(auth, this.facebookProvider);
-      console.log('Facebook sign-in successful:', result.user);
+      await signInWithRedirect(auth, this.facebookProvider);
     } catch (error) {
       console.error('Facebook sign-in error:', error);
-      
-      if (error.code === 'auth/popup-blocked') {
-        this.showAuthError('Your browser blocked the sign-in popup. Please allow popups for this site and try again.');
-      } else {
-        this.showAuthError('Failed to sign in with Facebook. Please try again.');
-      }
+      this.showAuthError('Failed to sign in with Facebook. Please try again.');
     }
   }
 
