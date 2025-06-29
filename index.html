@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Filter Product</title>
+    <link rel="stylesheet" href="styles.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="filter-container">
+      <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search..." />
+        <button id="search-btn">Search</button>
+      </div>
+      <div class="category-container">
+        <div class="category-btn" data-category="all">All Product</div>
+        <div class="category-btn" data-category="electronics">Electronics</div>
+        <div class="category-btn" data-category="clothing">Clothing</div>
+        <div class="category-btn" data-category="home">Home & Garden</div>
+      </div>
+    </div>
+
+    <div id="product-list">
+      <!-- Card 1 -->
+      <div class="product-item" data-category="electronics">
+        <h3>Smartphone</h3>
+        <p>Description of smartphone product.</p>
+      </div>
+      <!-- Card 2 -->
+      <div class="product-item" data-category="clothing">
+        <h3>T-Shirt</h3>
+        <p>Description of T-Shirt Product.</p>
+      </div>
+      <!-- Card 3 -->
+      <div class="product-item" data-category="Home">
+        <h3>Coffee Maker</h3>
+        <p>Description of Coffee Maker Product.</p>
+      </div>
+      <!-- Card 4 -->
+      <div class="product-item" data-category="Electronics">
+        <h3>Laptop</h3>
+        <p>Description of laptop Product.</p>
+      </div>
+      <!-- Card 5 -->
+      <div class="product-item" data-category="clothing">
+        <h3>Hoodie</h3>
+        <p>Description of Hoodie Product.</p>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
