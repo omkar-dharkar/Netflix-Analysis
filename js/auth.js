@@ -50,7 +50,12 @@ class AuthManager {
       console.log('Google sign-in successful:', result.user);
     } catch (error) {
       console.error('Google sign-in error:', error);
-      this.showAuthError('Failed to sign in with Google. Please try again.');
+      
+      if (error.code === 'auth/popup-blocked') {
+        this.showAuthError('Your browser blocked the sign-in popup. Please allow popups for this site and try again.');
+      } else {
+        this.showAuthError('Failed to sign in with Google. Please try again.');
+      }
     }
   }
 
@@ -60,7 +65,12 @@ class AuthManager {
       console.log('Facebook sign-in successful:', result.user);
     } catch (error) {
       console.error('Facebook sign-in error:', error);
-      this.showAuthError('Failed to sign in with Facebook. Please try again.');
+      
+      if (error.code === 'auth/popup-blocked') {
+        this.showAuthError('Your browser blocked the sign-in popup. Please allow popups for this site and try again.');
+      } else {
+        this.showAuthError('Failed to sign in with Facebook. Please try again.');
+      }
     }
   }
 
