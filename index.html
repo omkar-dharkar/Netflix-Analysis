@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Filter App - Mark V</title>
+    <title>Product Analytics Dashboard - AI-Powered Market Intelligence</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -13,40 +13,50 @@
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-3 sm:py-4">
                 <div class="flex items-center space-x-2 sm:space-x-3">
-                    <i class="fas fa-store text-2xl sm:text-3xl text-blue-600"></i>
-                    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">ProductHub</h1>
+                    <i class="fas fa-chart-line text-2xl sm:text-3xl text-blue-600"></i>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Analytics Hub</h1>
+                        <p class="text-xs sm:text-sm text-gray-500">AI-Powered Market Intelligence</p>
+                    </div>
                 </div>
                 
-                <!-- Auth Section -->
-                <div id="auth-section" class="flex items-center">
-                    <!-- Login buttons (shown when not authenticated) -->
-                    <div id="login-buttons" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                        <button id="google-login" class="flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 sm:px-4 rounded-lg transition-colors duration-200 text-sm sm:text-base min-h-[44px] touch-manipulation">
-                            <i class="fab fa-google"></i>
-                            <span class="hidden sm:inline">Sign in with Google</span>
-                            <span class="sm:hidden">Google</span>
-                        </button>
-                        <button id="facebook-login" class="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 sm:px-4 rounded-lg transition-colors duration-200 text-sm sm:text-base min-h-[44px] touch-manipulation">
-                            <i class="fab fa-facebook-f"></i>
-                            <span class="hidden sm:inline">Sign in with Facebook</span>
-                            <span class="sm:hidden">Facebook</span>
-                        </button>
-                    </div>
-                    
-                    <!-- User info (shown when authenticated) -->
-                    <div id="user-info" class="hidden flex items-center space-x-2 sm:space-x-4">
-                        <div class="flex items-center space-x-2 sm:space-x-3">
-                            <img id="user-avatar" src="" alt="User Avatar" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-blue-500">
-                            <div class="hidden sm:block">
-                                <p class="text-sm font-medium text-gray-900">Welcome,</p>
-                                <p id="user-name" class="text-sm text-blue-600 font-semibold"></p>
-                            </div>
-                        </div>
-                        <button id="logout-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 sm:px-4 rounded-lg transition-colors duration-200 text-sm min-h-[44px] touch-manipulation">
-                            <i class="fas fa-sign-out-alt sm:mr-2"></i>
-                            <span class="hidden sm:inline">Sign Out</span>
-                        </button>
-                    </div>
+                <!-- Navigation -->
+                <nav class="hidden md:flex space-x-6">
+                    <button id="dashboard-tab" class="nav-tab active" data-tab="dashboard">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </button>
+                    <button id="products-tab" class="nav-tab" data-tab="products">
+                        <i class="fas fa-box mr-2"></i>Products
+                    </button>
+                    <button id="analytics-tab" class="nav-tab" data-tab="analytics">
+                        <i class="fas fa-chart-bar mr-2"></i>Analytics
+                    </button>
+                    <button id="insights-tab" class="nav-tab" data-tab="insights">
+                        <i class="fas fa-lightbulb mr-2"></i>Insights
+                    </button>
+                </nav>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-bars text-gray-600"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-2">
+                    <button class="nav-tab mobile active" data-tab="dashboard">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </button>
+                    <button class="nav-tab mobile" data-tab="products">
+                        <i class="fas fa-box mr-2"></i>Products
+                    </button>
+                    <button class="nav-tab mobile" data-tab="analytics">
+                        <i class="fas fa-chart-bar mr-2"></i>Analytics
+                    </button>
+                    <button class="nav-tab mobile" data-tab="insights">
+                        <i class="fas fa-lightbulb mr-2"></i>Insights
+                    </button>
                 </div>
             </div>
         </div>
@@ -54,70 +64,201 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <!-- Filter Controls -->
-        <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
-            <div class="flex flex-col space-y-4">
-                <!-- Search Section -->
-                <div class="w-full">
-                    <div class="relative">
-                        <input 
-                            type="text" 
-                            id="search-input" 
-                            placeholder="Search products..." 
-                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-base"
-                        >
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard-content" class="tab-content active">
+            <!-- Overview Cards -->
+            <div id="overview-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+                <!-- Cards will be populated by JavaScript -->
+            </div>
+            
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <canvas id="conversionChart"></canvas>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-1 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Insights Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div id="top-products"></div>
+                <div id="ai-insights"></div>
+            </div>
+        </div>
+        
+        <!-- Products Tab -->
+        <div id="products-content" class="tab-content hidden">
+            <!-- Filter Controls -->
+            <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+                <div class="flex flex-col space-y-4">
+                    <!-- Search Section -->
+                    <div class="w-full">
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="search-input" 
+                                placeholder="Search products..." 
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-base"
+                            >
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- Sort Section -->
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                        <div class="flex items-center space-x-3">
+                            <label for="sort-select" class="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by:</label>
+                            <select id="sort-select" class="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
+                                <option value="name">Name</option>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="popularity">Popularity</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Sort Section -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                    <div class="flex items-center space-x-3">
-                        <label for="sort-select" class="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by:</label>
-                        <select id="sort-select" class="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base">
-                            <option value="name">Name</option>
-                            <option value="price-low">Price: Low to High</option>
-                            <option value="price-high">Price: High to Low</option>
-                            <option value="popularity">Popularity</option>
-                        </select>
+                <!-- Category Filters -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
+                    <div id="category-container" class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+                        <!-- Categories will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
 
-            <!-- Category Filters -->
-            <div class="mt-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
-                <div id="category-container" class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
-                    <!-- Categories will be populated by JavaScript -->
+            <!-- Results Info -->
+            <div class="flex justify-between items-center mb-4 sm:mb-6">
+                <p id="results-count" class="text-gray-600 font-medium text-sm sm:text-base"></p>
+                <div id="loading-spinner" class="hidden">
+                    <i class="fas fa-spinner fa-spin text-blue-500 text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                <!-- Products will be populated by JavaScript -->
+            </div>
+
+            <!-- No Results Message -->
+            <div id="no-results" class="hidden text-center py-12">
+                <i class="fas fa-search text-4xl sm:text-6xl text-gray-300 mb-4"></i>
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-600 mb-2">No products found</h3>
+                <p class="text-gray-500 text-sm sm:text-base">Try adjusting your search or filter criteria</p>
+            </div>
+        </div>
+        
+        <!-- Analytics Tab -->
+        <div id="analytics-content" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div id="price-optimization"></div>
+                <div id="market-basket"></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div id="user-segments"></div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Demand Forecasting</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-4">
+                            <select id="forecast-product" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg">
+                                <option value="">Select a product...</option>
+                            </select>
+                            <button id="generate-forecast" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Forecast
+                            </button>
+                        </div>
+                        <div id="forecast-results" class="hidden p-4 bg-gray-50 rounded-lg">
+                            <!-- Forecast results will be displayed here -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Results Info -->
-        <div class="flex justify-between items-center mb-4 sm:mb-6">
-            <p id="results-count" class="text-gray-600 font-medium text-sm sm:text-base"></p>
-            <div id="loading-spinner" class="hidden">
-                <i class="fas fa-spinner fa-spin text-blue-500 text-xl"></i>
+        
+        <!-- Insights Tab -->
+        <div id="insights-content" class="tab-content hidden">
+            <div class="grid grid-cols-1 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-robot mr-2 text-blue-500"></i>
+                        Machine Learning Insights
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <h4 class="font-medium text-gray-900">Customer Behavior Patterns</h4>
+                            <ul class="space-y-2 text-sm text-gray-600">
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+                                    <span>Users who view electronics are 3x more likely to purchase accessories</span>
+                                </li>
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+                                    <span>Mobile users prefer products under $100, desktop users show no price preference</span>
+                                </li>
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+                                    <span>Cart abandonment peaks at $200+ items, suggesting price sensitivity threshold</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="space-y-4">
+                            <h4 class="font-medium text-gray-900">Predictive Recommendations</h4>
+                            <ul class="space-y-2 text-sm text-gray-600">
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
+                                    <span>Increase electronics inventory by 25% for Q4 based on trend analysis</span>
+                                </li>
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
+                                    <span>Bundle clothing items with accessories for 15% revenue increase</span>
+                                </li>
+                                <li class="flex items-start space-x-2">
+                                    <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
+                                    <span>Target high-value users with premium product recommendations</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-chart-line mr-2 text-green-500"></i>
+                        Performance Metrics
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-600 mb-2">94.2%</div>
+                            <div class="text-sm text-gray-600">Model Accuracy</div>
+                        </div>
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600 mb-2">+18%</div>
+                            <div class="text-sm text-gray-600">Revenue Lift</div>
+                        </div>
+                        <div class="text-center p-4 bg-purple-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600 mb-2">2.3x</div>
+                            <div class="text-sm text-gray-600">ROI Improvement</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <!-- Product Grid -->
-        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            <!-- Products will be populated by JavaScript -->
-        </div>
-
-        <!-- No Results Message -->
-        <div id="no-results" class="hidden text-center py-12">
-            <i class="fas fa-search text-4xl sm:text-6xl text-gray-300 mb-4"></i>
-            <h3 class="text-lg sm:text-xl font-semibold text-gray-600 mb-2">No products found</h3>
-            <p class="text-gray-500 text-sm sm:text-base">Try adjusting your search or filter criteria</p>
         </div>
     </main>
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-6 sm:py-8 mt-12 sm:mt-16">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center">
-            <p class="text-sm sm:text-base">&copy; 2025 ProductHub. Built with ❤️ using Vanilla JS & Firebase</p>
+            <p class="text-sm sm:text-base">&copy; 2025 Analytics Hub. Powered by AI & Machine Learning</p>
         </div>
     </footer>
 
@@ -125,6 +266,6 @@
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/products.js"></script>
+    <script type="module" src="js/analytics-engine.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
     <script type="module" src="js/app.js"></script>
-</body>
-</html>
